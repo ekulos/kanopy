@@ -20,6 +20,7 @@
     "after:release": "git checkout dev && git merge main --ff-only && git push origin dev && git checkout main"
   },
   "plugins": {
+    "@release-it/conventional-changelog": {
       "preset": {
         "name": "conventionalcommits",
         "types": [
