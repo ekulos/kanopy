@@ -39,6 +39,7 @@ Open http://localhost:3000.
 
 | Variable | Description |
 |---|---|
+| `DATABASE_PROVIDER` | `sqlite` or `postgres`
 | `DATABASE_URL` | SQLite: `file:./dev.db` or a PostgreSQL connection string |
 | `NEXTAUTH_URL` | Base URL of the app (e.g. `http://localhost:3000`) |
 | `NEXTAUTH_SECRET` | Random secret — generate with `openssl rand -base64 32` |

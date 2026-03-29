@@ -238,7 +238,7 @@ DELETE FROM "Project";
 The project uses SQLite for development (`DATABASE_URL="file:./dev.db"`).
 
 To switch to PostgreSQL in production:
-1. Change `provider = "postgresql"` in `schema.prisma`
+1. Update `DATABASE_PROVIDER` in the production environment
 2. Update `DATABASE_URL` in the production environment
 3. Run `npm run db:migrate` in production
 

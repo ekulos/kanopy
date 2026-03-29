@@ -17,6 +17,7 @@ COPY . .
 ENV NEXTAUTH_URL=http://localhost:3000
 ENV NEXTAUTH_SECRET=build_placeholder
 ENV AUTH_SECRET=build_placeholder
+ENV DATABASE_PROVIDER=sqlite
 ENV DATABASE_URL=file:./dev.db
 
 RUN npx prisma generate
