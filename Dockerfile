@@ -27,6 +27,9 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
+# OpenSSL è richiesto dal query engine di Prisma
+RUN apk add --no-cache openssl
+
 # Next.js standalone bundle (includes server + required node_modules subset)
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
