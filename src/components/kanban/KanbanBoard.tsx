@@ -11,6 +11,7 @@ import {
   type DragEndEvent,
 } from "@dnd-kit/core";
 import toast from "react-hot-toast";
+import { useTranslations } from "next-intl";
 import KanbanColumn from "./KanbanColumn";
 import TaskCard from "../tasks/TaskCard";
 import type { Task, TaskStatus, TaskPriority, TaskFilter, Project } from "@/types";
@@ -27,11 +28,13 @@ const COLUMNS: TaskStatus[] = ["todo", "in_progress", "done"];
 export default function KanbanBoard({ project, initialTasks, filter }: Props) {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
-
-  // Sync quando il server refresha i dati (es. dopo creazione task)
+  // Sync when the server refreshes data (e.g., after task creation)
   useEffect(() => {
     setTasks(initialTasks);
   }, [initialTasks]);
+  
+  const tError = useTranslations("error");
+  const t = useTranslations("labels");
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
@@ -56,7 +59,7 @@ export default function KanbanBoard({ project, initialTasks, filter }: Props) {
     });
     return {
       id: status,
-      label: STATUS_LABELS[status],
+      label: t(`status.${status}`) ?? STATUS_LABELS[status],
       color: STATUS_DOT_COLORS[status],
       tasks: filteredForColumn,
       enableAdd: status === "todo",
@@ -113,7 +116,7 @@ export default function KanbanBoard({ project, initialTasks, filter }: Props) {
         setTasks((prev) =>
           prev.map((t) => (t.id === taskId ? { ...t, status: task.status } : t))
         );
-        toast.error("Errore nell'aggiornamento del task");
+        toast.error(tError("updating"));
       }
     },
     [tasks]

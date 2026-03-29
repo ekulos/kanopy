@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
@@ -9,6 +9,7 @@ import AvatarStack from "@/components/ui/AvatarStack";
 import ProgressBar from "@/components/ui/ProgressBar";
 import { cn } from "@/lib/utils";
 import type { Project } from "@/types";
+import { useTranslations } from "next-intl";
 
 interface Props {
   projects: Project[];
@@ -22,8 +23,13 @@ interface DeleteState {
 }
 
 export default function ProjectsTable({ projects: initialProjects }: Props) {
+  const t = useTranslations("projects");
+  const tt = useTranslations("tasks");
   const router = useRouter();
   const [projects, setProjects] = useState<Project[]>(initialProjects);
+  useEffect(() => {
+    setProjects(initialProjects);
+  }, [initialProjects]);
   const [deleteState, setDeleteState] = useState<DeleteState | null>(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -50,10 +56,10 @@ export default function ProjectsTable({ projects: initialProjects }: Props) {
       if (!res.ok) throw new Error();
       setProjects((prev) => prev.filter((p) => p.id !== deleteState.project.id));
       setDeleteState(null);
-      toast.success("Project deleted");
+      toast.success(t("deleted"));
       router.refresh();
     } catch {
-      toast.error("Error deleting project");
+      toast.error(t("errorDeleting"));
     } finally {
       setDeleting(false);
     }
@@ -62,8 +68,8 @@ export default function ProjectsTable({ projects: initialProjects }: Props) {
   if (projects.length === 0) {
     return (
       <div className="text-center py-20 text-gray-400">
-        <p className="text-sm">No projects yet.</p>
-        <p className="text-xs mt-1">Create your first project to get started.</p>
+        <p className="text-sm">{t("noProjects")}</p>
+        <p className="text-xs mt-1">{t("createFirstProject")}</p>
       </div>
     );
   }
@@ -74,11 +80,11 @@ export default function ProjectsTable({ projects: initialProjects }: Props) {
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-100">
-              <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-4 py-3">Project</th>
-              <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-4 py-3">Status</th>
-              <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-4 py-3">Progress</th>
-              <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-4 py-3">Team</th>
-              <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-4 py-3">Tasks</th>
+              <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-4 py-3">{t("table.project")}</th>
+              <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-4 py-3">{t("table.status")}</th>
+              <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-4 py-3">{t("table.progress")}</th>
+              <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-4 py-3">{t("table.team")}</th>
+              <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-4 py-3">{t("table.tasks")}</th>
               <th className="w-10 px-4 py-3" />
             </tr>
           </thead>
@@ -116,11 +122,11 @@ export default function ProjectsTable({ projects: initialProjects }: Props) {
                       ? <AvatarStack users={memberUsers} max={4} size="sm" />
                       : <span className="text-xs text-gray-300">—</span>}
                   </td>
-                  <td className="px-4 py-3 text-xs text-gray-400">{total} task</td>
+                  <td className="px-4 py-3 text-xs text-gray-400">{t("table.tasksCount", { count: total })}</td>
                   <td className="px-4 py-3 text-right">
                     <button
                       onClick={(e) => { e.preventDefault(); openDelete(p); }}
-                      title="Elimina progetto"
+                      title={t("delete")}
                       className={cn(
                         "opacity-0 group-hover:opacity-100 transition-opacity w-7 h-7 rounded-md flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50"
                       )}
@@ -154,38 +160,37 @@ export default function ProjectsTable({ projects: initialProjects }: Props) {
                 </svg>
               </div>
               <div>
-                <h2 className="text-base font-semibold text-gray-900">Delete project</h2>
+                <h2 className="text-base font-semibold text-gray-900">{t("delete")}</h2>
                 <p className="text-sm text-gray-500 mt-1">
-                  You are about to delete{" "}
-                  <span className="font-medium text-gray-800">{deleteState.project.name}</span>.
+                  {t("deleteConfirmMessage", { name: deleteState.project.name })}
                 </p>
               </div>
             </div>
 
-            {deleteState.loading ? (
+                {deleteState.loading ? (
               <div className="rounded-lg border border-gray-100 bg-gray-50 px-4 py-5 flex items-center justify-center gap-2 mb-5 text-xs text-gray-400">
                 <svg className="w-4 h-4 animate-spin" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <path d="M8 2a6 6 0 100 12A6 6 0 008 2z" strokeOpacity=".3" />
                   <path d="M8 2a6 6 0 016 6" strokeLinecap="round" />
                 </svg>
-                Fetching information...
+                {t("fetchingInfo")}
               </div>
-            ) : (
+              ) : (
               <div className="rounded-lg border border-gray-100 bg-gray-50 px-4 py-3 mb-5 space-y-1.5">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-500">Task principali</span>
+                  <span className="text-gray-500">{t("deleteModal.rootTasks")}</span>
                   <span className="font-semibold text-gray-800">{deleteState.rootTasks}</span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-500">Sub-task</span>
+                  <span className="text-gray-500">{t("deleteModal.subtasks")}</span>
                   <span className="font-semibold text-gray-800">{deleteState.subtasks}</span>
                 </div>
                 <div className="border-t border-gray-200 pt-1.5 flex items-center justify-between text-xs">
-                  <span className="text-gray-500">Total deletions</span>
-                  <span className="font-semibold text-red-600">{deleteState.rootTasks + deleteState.subtasks} items</span>
+                  <span className="text-gray-500">{t("deleteModal.totalDeletions")}</span>
+                  <span className="font-semibold text-red-600">{deleteState.rootTasks + deleteState.subtasks} {t("deleteModal.items")}</span>
                 </div>
                 {deleteState.rootTasks + deleteState.subtasks > 0 && (
-                  <p className="text-[11px] text-red-500 pt-0.5">This action is <span className="font-medium">irreversible</span>.</p>
+                  <p className="text-[11px] text-red-500 pt-0.5">{tt("irreversible")}</p>
                 )}
               </div>
             )}
@@ -196,14 +201,14 @@ export default function ProjectsTable({ projects: initialProjects }: Props) {
                 disabled={deleting}
                 className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50"
               >
-                Cancel
+                {t("cancel")}
               </button>
               <button
                 onClick={handleDelete}
                 disabled={deleting || deleteState.loading}
                 className="px-4 py-2 text-sm rounded-lg bg-red-500 text-white font-medium hover:bg-red-600 disabled:opacity-50"
               >
-                {deleting ? "Deleting..." : "Delete project"}
+                {deleting ? t("deleting") : t("delete")}
               </button>
             </div>
           </div>

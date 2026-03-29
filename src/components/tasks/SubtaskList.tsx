@@ -3,6 +3,7 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { cn, STATUS_LABELS, PRIORITY_LABELS, formatDueDate, isDueLate } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import ProgressBar from "@/components/ui/ProgressBar";
 import { MarkdownEditor, MarkdownPreview } from "@/components/ui/MarkdownEditor";
 import type { Task } from "@/types";
@@ -12,6 +13,8 @@ interface Props {
 }
 
 export default function SubtaskList({ task }: Props) {
+  const t = useTranslations("tasks");
+  const tl = useTranslations("labels");
   const [subtasks, setSubtasks] = useState<Task[]>(task.subtasks ?? []);
   const [newTitle, setNewTitle] = useState("");
   const [newDesc, setNewDesc] = useState("");
@@ -40,9 +43,9 @@ export default function SubtaskList({ task }: Props) {
         body: JSON.stringify({ status: newStatus }),
       });
       if (!res.ok) throw new Error();
-    } catch {
-      setSubtasks((prev) => prev.map((s) => (s.id === subtask.id ? { ...s, status: subtask.status } : s)));
-      toast.error("Errore aggiornamento sotto-task");
+      } catch {
+        setSubtasks((prev) => prev.map((s) => (s.id === subtask.id ? { ...s, status: subtask.status } : s)));
+        toast.error(t("errorUpdatingSubtask"));
     }
   };
 
@@ -51,7 +54,7 @@ export default function SubtaskList({ task }: Props) {
     try {
       await fetch(`/api/tasks/${subtaskId}`, { method: "DELETE" });
     } catch {
-      toast.error("Errore eliminazione sotto-task");
+      toast.error(t("errorDeletingSubtask"));
     }
   };
 
@@ -77,7 +80,7 @@ export default function SubtaskList({ task }: Props) {
       setNewDesc("");
       setAdding(false);
     } catch {
-      toast.error("Errore creazione sotto-task");
+      toast.error(t("errorCreatingSubtask"));
     }
   };
 
@@ -86,7 +89,7 @@ export default function SubtaskList({ task }: Props) {
       {/* Header */}
       <div className="flex items-center gap-2 mb-3">
         <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">
-          Sub-task
+          {t("subtasksTitle")}
         </p>
         <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{total}</span>
         <div className="flex items-center gap-2 ml-auto">
@@ -113,7 +116,7 @@ export default function SubtaskList({ task }: Props) {
             <button
               onClick={() => toggleExpand(s.id)}
               className="flex-shrink-0 text-gray-300 hover:text-gray-500 transition-colors"
-              aria-label={expanded ? "Comprimi" : "Espandi"}
+              aria-label={expanded ? t("collapse") : t("expand")}
             >
               <svg
                 className={cn("w-3 h-3 transition-transform", expanded && "rotate-90")}
@@ -158,7 +161,7 @@ export default function SubtaskList({ task }: Props) {
                 s.status === "in_progress" ? "bg-emerald-50 text-emerald-700" :
                 "bg-blue-50 text-blue-700"
               )}>
-                {STATUS_LABELS[s.status]}
+                {tl(`status.${s.status}`)}
               </span>
               {!expanded && s.assignees?.slice(0, 2).map((a) => (
                 <div key={a.id} className="w-5 h-5 rounded-full bg-accent flex items-center justify-center text-[8px] text-white font-medium">
@@ -195,7 +198,7 @@ export default function SubtaskList({ task }: Props) {
                   {PRIORITY_LABELS[s.priority]}
                 </span>
 
-                {/* Scadenza */}
+                {/* Deadlines */}
                 {s.dueDate && (
                   <span className={cn(
                     "text-[10px] px-1.5 py-0.5 rounded-full font-medium flex items-center gap-1",
@@ -229,7 +232,7 @@ export default function SubtaskList({ task }: Props) {
 
                 {/* Data creazione */}
                 <span className="text-[10px] text-gray-400 ml-auto">
-                  Creato {formatDueDate(s.createdAt)}
+                  {t("created")} {formatDueDate(s.createdAt)}
                 </span>
               </div>
             </div>
@@ -251,7 +254,7 @@ export default function SubtaskList({ task }: Props) {
                   if (e.key === "Enter") addSubtask();
                   if (e.key === "Escape") { setAdding(false); setNewTitle(""); setNewDesc(""); }
                 }}
-                placeholder="Subtask title..."
+                placeholder={t("subtaskTitlePlaceholder")}
                 className="flex-1 text-sm bg-transparent outline-none placeholder:text-gray-300"
               />
             </div>
@@ -259,12 +262,12 @@ export default function SubtaskList({ task }: Props) {
               <MarkdownEditor
                 value={newDesc}
                 onChange={setNewDesc}
-                placeholder="Description (optional)..."
+                placeholder={t("subtaskDescriptionPlaceholder")}
                 minHeight={80}
               />
             </div>
             <div className="flex gap-1.5 pl-[26px]">
-              <button onClick={addSubtask} className="text-xs bg-accent text-white px-2.5 py-1 rounded">Add</button>
+              <button onClick={addSubtask} className="text-xs bg-accent text-white px-2.5 py-1 rounded">{t("add")}</button>
               <button onClick={() => { setAdding(false); setNewTitle(""); setNewDesc(""); }} className="text-xs text-gray-400 px-1.5 py-1">
                 ✕
               </button>
@@ -278,7 +281,7 @@ export default function SubtaskList({ task }: Props) {
             <svg className="w-3.5 h-3.5" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
               <path d="M7 1v12M1 7h12" />
             </svg>
-            Add subtask
+            {t("addSubtask")}
           </button>
         )}
       </div>

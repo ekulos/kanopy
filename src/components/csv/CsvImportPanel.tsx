@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import Papa from "papaparse";
 import toast from "react-hot-toast";
 import { cn, parseCsvStatus, normalizeCsvStatus, parseCsvPriority, normalizeCsvPriority } from "@/lib/utils";
@@ -16,6 +17,7 @@ type RowState = CsvTaskRow & { _errors: string[]; _valid: boolean };
 
 export default function CsvImportPanel({ projectId, projectName }: Props) {
   const router = useRouter();
+  const t = useTranslations("csv");
   const inputRef = useRef<HTMLInputElement>(null);
   const [rows, setRows] = useState<RowState[]>([]);
   const [importing, setImporting] = useState(false);
@@ -51,12 +53,12 @@ export default function CsvImportPanel({ projectId, projectName }: Props) {
         setRows(parsed);
         setDone(null);
       },
-      error: () => toast.error("Errore nel parsing del CSV"),
+      error: () => toast.error(t("parsingError")),
     });
   };
 
   const handleFile = (file: File) => {
-    if (!file.name.endsWith(".csv")) { toast.error("Carica un file .csv"); return; }
+    if (!file.name.endsWith(".csv")) { toast.error(t("invalidFile")); return; }
     parseFile(file);
   };
 
@@ -85,7 +87,7 @@ export default function CsvImportPanel({ projectId, projectName }: Props) {
       if (!res.ok) throw new Error();
       setDone({ imported: data.data.imported });
     } catch {
-      toast.error("Error during import");
+      toast.error(t("importError"));
     } finally {
       setImporting(false);
     }
@@ -104,15 +106,15 @@ export default function CsvImportPanel({ projectId, projectName }: Props) {
             </svg>
           </div>
           <h3 className="text-base font-semibold text-gray-900 mb-1">
-            {done.imported} task importati in "{projectName}"
+            {t("importedSuccess", { count: done.imported, project: projectName })}
           </h3>
-          <p className="text-sm text-gray-400 mb-6">I task sono stati aggiunti al progetto</p>
+          <p className="text-sm text-gray-400 mb-6">{t("tasksAdded")}</p>
           <div className="flex gap-3 justify-center">
             <button onClick={() => router.push(`/projects/${projectId}`)} className="text-sm bg-accent text-white px-4 py-2 rounded-lg hover:opacity-90">
-              Vai ai task
+              {t("goToTasks")}
             </button>
             <button onClick={() => { setRows([]); setDone(null); }} className="text-sm border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50">
-              Importa altro
+              {t("importAnother")}
             </button>
           </div>
         </div>
@@ -140,28 +142,28 @@ export default function CsvImportPanel({ projectId, projectName }: Props) {
               <path d="M10 13V4M6 8l4-4 4 4" /><path d="M3 15h14" />
             </svg>
           </div>
-          <p className="text-sm font-medium text-gray-800 mb-1">Drag CSV file here</p>
-          <p className="text-xs text-gray-400 mb-3">or click to select</p>
-          <span className="text-xs text-accent border border-accent/30 px-3 py-1 rounded-full">Choose .csv file</span>
+          <p className="text-sm font-medium text-gray-800 mb-1">{t("dropZoneTitle")}</p>
+          <p className="text-xs text-gray-400 mb-3">{t("dropZoneSubtitle")}</p>
+          <span className="text-xs text-accent border border-accent/30 px-3 py-1 rounded-full">{t("chooseFile")}</span>
         </div>
       )}
 
-      {/* Spec colonne */}
+      {/* Column spec */}
       <div className="bg-white border border-gray-200 rounded-xl p-5">
-        <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Supported columns</p>
+        <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">{t("supportedColumnsTitle")}</p>
         <div className="space-y-2">
           {[
-            { col: "title", req: true, desc: "Task name" },
-            { col: "description", req: false, desc: "Additional details" },
-            { col: "status", req: false, desc: "todo · in_progress · done" },
-            { col: "priority", req: false, desc: "high · medium · low" },
-            { col: "due_date", req: false, desc: "Format YYYY-MM-DD" },
-            { col: "assignees", req: false, desc: "Comma separated emails" },
-            { col: "main_task", req: false, desc: "Parent task title (creates sub-task)" },
+            { col: "title", req: true, desc: t("columns.title") },
+            { col: "description", req: false, desc: t("columns.description") },
+            { col: "status", req: false, desc: t("columns.status") },
+            { col: "priority", req: false, desc: t("columns.priority") },
+            { col: "due_date", req: false, desc: t("columns.due_date") },
+            { col: "assignees", req: false, desc: t("columns.assignees") },
+            { col: "main_task", req: false, desc: t("columns.main_task") },
           ].map((r) => (
             <div key={r.col} className="flex items-center gap-2.5 text-xs">
               <code className="bg-gray-100 px-2 py-0.5 rounded font-mono text-gray-700">{r.col}</code>
-              <span className={cn("font-medium", r.req ? "text-red-500" : "text-gray-300")}>{r.req ? "required" : "optional"}</span>
+              <span className={cn("font-medium", r.req ? "text-red-500" : "text-gray-300")}>{r.req ? t("required") : t("optional")}</span>
               <span className="text-gray-400">— {r.desc}</span>
             </div>
           ))}
@@ -172,12 +174,12 @@ export default function CsvImportPanel({ projectId, projectName }: Props) {
       {rows.length > 0 && (
         <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
           <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
-            <div className="flex items-center gap-3">
-              <p className="text-sm font-medium text-gray-800">Preview — {rows.length} rows</p>
-              <span className="text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium">{valid} valid</span>
-              {invalid > 0 && <span className="text-xs bg-red-50 text-red-700 px-2 py-0.5 rounded-full font-medium">{invalid} errors</span>}
+              <div className="flex items-center gap-3">
+              <p className="text-sm font-medium text-gray-800">{t("preview", { count: rows.length })}</p>
+              <span className="text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium">{t("valid", { count: valid })}</span>
+              {invalid > 0 && <span className="text-xs bg-red-50 text-red-700 px-2 py-0.5 rounded-full font-medium">{t("errors", { count: invalid })}</span>}
             </div>
-            <button onClick={() => setRows([])} className="text-xs text-gray-400 hover:text-gray-600">Change file</button>
+            <button onClick={() => setRows([])} className="text-xs text-gray-400 hover:text-gray-600">{t("changeFile")}</button>
           </div>
 
           <div className="overflow-x-auto max-h-80">
@@ -186,7 +188,7 @@ export default function CsvImportPanel({ projectId, projectName }: Props) {
                 <tr>
                   { ["title", "description", "main_task", "status", "priority", "due_date", "assignees", "result"].map((h) => (
                     <th key={h} className="text-left px-4 py-2.5 font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      {h}
+                      {t(`headers.${h}`)}
                     </th>
                   )) }
                 </tr>
@@ -201,7 +203,7 @@ export default function CsvImportPanel({ projectId, projectName }: Props) {
                     <td className="px-4 py-2.5 text-gray-500">{row.priority || "—"}</td>
                     <td className="px-4 py-2.5 text-gray-500">{row.due_date || "—"}</td>
                     <td className="px-4 py-2.5 text-gray-500 max-w-[120px] truncate">{row.assignees || "—"}</td>
-                    <td className="px-4 py-2.5">{row._valid ? <span className="bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-medium">ok</span> : <span className="bg-red-100 text-red-700 px-1.5 py-0.5 rounded font-medium" title={row._errors.join(", ")}>errore</span>}</td>
+                    <td className="px-4 py-2.5">{row._valid ? <span className="bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-medium">{t("ok")}</span> : <span className="bg-red-100 text-red-700 px-1.5 py-0.5 rounded font-medium" title={row._errors.join(", ")}>{t("error")}</span>}</td>
                   </tr>
                 ))}
               </tbody>
@@ -210,10 +212,10 @@ export default function CsvImportPanel({ projectId, projectName }: Props) {
 
           <div className="px-5 py-4 border-t border-gray-100 flex items-center gap-3">
             <button onClick={handleImport} disabled={importing || valid === 0} className="text-sm bg-accent text-white px-4 py-2 rounded-lg hover:opacity-90 disabled:opacity-50 font-medium">
-              {importing ? "Importing..." : `Import ${valid} tasks`}
+              {importing ? t("importing") : t("importCount", { count: valid })}
             </button>
-            <button onClick={() => setRows([])} className="text-sm border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50">Cancel</button>
-            {invalid > 0 && <p className="text-xs text-gray-400 ml-auto">{invalid} rows with errors will be skipped</p>}
+            <button onClick={() => setRows([])} className="text-sm border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50">{t("cancel")}</button>
+            {invalid > 0 && <p className="text-xs text-gray-400 ml-auto">{t("rowsSkipped", { count: invalid })}</p>}
           </div>
         </div>
       )}

@@ -21,7 +21,7 @@ async function getTeamAsOwnerOrAdmin(teamId: string, userId: string) {
   });
 }
 
-// POST /api/teams/[id]/members — aggiunge un membro per email
+// POST /api/teams/[id]/members — add a member by email
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Not authorized" }, { status: 401 });
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   return NextResponse.json({ data: member }, { status: 201 });
 }
 
-// DELETE /api/teams/[id]/members — rimuove un membro (userId nel body)
+// DELETE /api/teams/[id]/members — remove a member (userId in body)
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Not authorized" }, { status: 401 });
@@ -63,7 +63,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const parsed = removeMemberSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
 
-  // Non permettere di rimuovere l'owner
+  // Do not allow removing the owner
   const memberToRemove = await prisma.teamMember.findUnique({
     where: { teamId_userId: { teamId: id, userId: parsed.data.userId } },
   });

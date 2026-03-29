@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
@@ -13,18 +14,46 @@ interface Props {
 
 export default function TaskDetailTopbar({ task }: Props) {
   const router = useRouter();
+  const t = useTranslations("task");
+  const tProjects = useTranslations("projects");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [prevTaskId, setPrevTaskId] = useState<string | null>(null);
+  const [nextTaskId, setNextTaskId] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      try {
+        const qs = new URLSearchParams();
+        qs.set("projectId", task.projectId);
+        if (task.parentId) qs.set("parentId", task.parentId);
+        else qs.set("onlyRoot", "true");
+        const res = await fetch(`/api/tasks?${qs.toString()}`);
+        if (!res.ok) return;
+        const json = await res.json();
+        const list: Task[] = json.data ?? [];
+        const idx = list.findIndex((t) => t.id === task.id);
+        if (!mounted) return;
+        setPrevTaskId(idx > 0 ? list[idx - 1].id : null);
+        setNextTaskId(idx >= 0 && idx < list.length - 1 ? list[idx + 1].id : null);
+      } catch (e) {
+        // ignore
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, [task.id, task.projectId, task.parentId]);
 
   const handleDelete = async () => {
     setDeleting(true);
     try {
       const res = await fetch(`/api/tasks/${task.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error();
-      toast.success("Task deleted");
+      toast.success(t("deleted"));
       router.push(`/projects/${task.project?.code ?? task.projectId}`);
     } catch {
-      toast.error("Error deleting task");
+      toast.error(t("errorDeleting"));
       setDeleting(false);
       setConfirmOpen(false);
     }
@@ -40,7 +69,7 @@ export default function TaskDetailTopbar({ task }: Props) {
         <svg className="w-3.5 h-3.5" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
           <path d="M9 2L4 7l5 5" />
         </svg>
-        Projects
+        {tProjects("title")}
       </Link>
       <span className="text-gray-300 text-xs">/</span>
       <Link
@@ -55,22 +84,32 @@ export default function TaskDetailTopbar({ task }: Props) {
       <div className="flex-1" />
 
       {/* Nav prev/next */}
-      <button className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors" title="Previous task">
+      <button
+        onClick={() => prevTaskId && router.push(`/projects/${task.project?.code ?? task.projectId}/tasks/${prevTaskId}`)}
+        disabled={!prevTaskId}
+        className={`w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors ${!prevTaskId ? 'opacity-40 pointer-events-none' : ''}`}
+        title={prevTaskId ? t("previous") : ""}
+      >
         <svg className="w-3.5 h-3.5 text-gray-400" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
           <path d="M9 2L4 7l5 5" />
         </svg>
       </button>
-      <button className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors" title="Next task">
+      <button
+        onClick={() => nextTaskId && router.push(`/projects/${task.project?.code ?? task.projectId}/tasks/${nextTaskId}`)}
+        disabled={!nextTaskId}
+        className={`w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors ${!nextTaskId ? 'opacity-40 pointer-events-none' : ''}`}
+        title={nextTaskId ? t("next") : ""}
+      >
         <svg className="w-3.5 h-3.5 text-gray-400" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
           <path d="M5 2l5 5-5 5" />
         </svg>
       </button>
 
-      {/* Condividi */}
+      {/* Share */}
       <button
         className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
-        title="Copy link"
-        onClick={() => { navigator.clipboard.writeText(window.location.href); toast.success("Link copied!"); }}
+        title={t("copyLinkTitle")}
+        onClick={() => { navigator.clipboard.writeText(window.location.href); toast.success(t("copyLink")); }}
       >
         <svg className="w-3.5 h-3.5 text-gray-400" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
           <circle cx="11" cy="3" r="1.5" /><circle cx="3" cy="7" r="1.5" /><circle cx="11" cy="11" r="1.5" />
@@ -82,14 +121,14 @@ export default function TaskDetailTopbar({ task }: Props) {
         onClick={() => setConfirmOpen(true)}
         className="text-xs text-red-500 border border-red-200 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors"
       >
-        Delete
+        {t("delete")}
       </button>
 
       <ConfirmModal
         open={confirmOpen}
-        title="Delete task"
-        message="Are you sure you want to delete this task? This action cannot be undone."
-        confirmLabel="Delete"
+        title={t("deleteConfirmTitle")}
+        message={t("deleteConfirmMessage")}
+        confirmLabel={t("delete")}
         danger
         loading={deleting}
         onConfirm={handleDelete}

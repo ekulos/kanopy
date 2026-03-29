@@ -5,7 +5,7 @@ import { z } from "zod";
 
 const createProjectSchema = z.object({
   name: z.string().min(1).max(100),
-  code: z.string().regex(/^[A-Z][A-Z0-9]{0,9}$/, "Il codice deve iniziare con una lettera maiuscola e contenere solo lettere maiuscole e numeri (es. SKARA)").min(1).max(10),
+  code: z.string().regex(/^[A-Z][A-Z0-9]{0,9}$/, "Code must start with an uppercase letter and contain only uppercase letters and numbers (e.g. SKARA)").min(1).max(10),
   description: z.string().optional(),
   color: z.string().optional().default("#378add"),
   teamId: z.string().optional(),
@@ -14,7 +14,7 @@ const createProjectSchema = z.object({
 export async function GET(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+    return NextResponse.json({ error: "Not authorized" }, { status: 401 });
   }
 
   const { searchParams } = new URL(req.url);
@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+    return NextResponse.json({ error: "Not authorized" }, { status: 401 });
   }
 
   const body = await req.json();

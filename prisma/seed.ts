@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-  // Utenti demo
+  // Demo users
   const marco = await prisma.user.upsert({
     where: { email: "marco@kanopy.dev" },
     update: {},
@@ -53,12 +53,12 @@ async function main() {
     },
   });
 
-  // Progetto
+  // Project
   const project = await prisma.project.create({
     data: {
       name: "Website Redesign",
       code: "WEB",
-      description: "Redesign completo del sito aziendale con Next.js 14",
+      description: "Complete redesign of the company website with Next.js 14",
       color: "#378add",
       status: "active",
       ownerId: marco.id,
@@ -66,11 +66,11 @@ async function main() {
     },
   });
 
-  // Task con sotto-task
+  // Task with subtasks
   const task1 = await prisma.task.create({
     data: {
       title: "Kanban drag & drop",
-      description: "Implementare drag & drop con @dnd-kit/core",
+      description: "Implement drag & drop with @dnd-kit/core",
       status: "in_progress",
       priority: "high",
       ticketNumber: 1,
@@ -81,11 +81,11 @@ async function main() {
     },
   });
 
-  // Sotto-task
+  // Subtasks
   await prisma.task.createMany({
     data: [
       {
-        title: "Installare @dnd-kit/core",
+        title: "Install @dnd-kit/core",
         status: "done",
         priority: "medium",
         projectId: project.id,
@@ -93,7 +93,7 @@ async function main() {
         position: 0,
       },
       {
-        title: "Wrappare le colonne con DndContext",
+        title: "Wrap columns with DndContext",
         status: "done",
         priority: "medium",
         projectId: project.id,
@@ -101,7 +101,7 @@ async function main() {
         position: 1,
       },
       {
-        title: "Implementare onDragEnd con aggiornamento stato",
+        title: "Implement onDragEnd with state update",
         status: "in_progress",
         priority: "high",
         projectId: project.id,
@@ -109,7 +109,7 @@ async function main() {
         position: 2,
       },
       {
-        title: "Test su dispositivi touch",
+        title: "Test on touch devices",
         status: "todo",
         priority: "medium",
         projectId: project.id,
@@ -133,7 +133,7 @@ async function main() {
 
   await prisma.task.create({
     data: {
-      title: "Design system & componenti",
+      title: "Design system & components",
       status: "todo",
       priority: "medium",
       ticketNumber: 3,
@@ -146,7 +146,7 @@ async function main() {
 
   await prisma.task.create({
     data: {
-      title: "Deploy su Vercel",
+      title: "Deploy to Vercel",
       status: "todo",
       priority: "high",
       ticketNumber: 4,
@@ -159,7 +159,7 @@ async function main() {
     },
   });
 
-  console.log("✅ Seed completato");
+  console.log("✅ Seed completed");
 }
 
 main()

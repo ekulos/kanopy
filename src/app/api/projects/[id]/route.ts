@@ -50,11 +50,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
-  if (!session?.user?.id) return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ error: "Not authorized" }, { status: 401 });
 
   const { id } = await params;
   const existing = await getProject(id, session.user.id);
-  if (!existing) return NextResponse.json({ error: "Progetto non trovato" }, { status: 404 });
+  if (!existing) return NextResponse.json({ error: "Project not found" }, { status: 404 });
 
   const body = await req.json();
   const parsed = updateProjectSchema.safeParse(body);
@@ -70,11 +70,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
-  if (!session?.user?.id) return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ error: "Not authorized" }, { status: 401 });
 
   const { id } = await params;
   const existing = await getProject(id, session.user.id);
-  if (!existing) return NextResponse.json({ error: "Progetto non trovato" }, { status: 404 });
+  if (!existing) return NextResponse.json({ error: "Project not found" }, { status: 404 });
 
   await prisma.project.delete({ where: { id: existing.id } });
   return NextResponse.json({ data: { success: true } });

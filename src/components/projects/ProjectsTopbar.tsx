@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { useTranslations } from "next-intl";
 import Modal from "@/components/ui/Modal";
 
 const COLORS = ["#378add", "#7c5cbf", "#e8a838", "#1d9e75", "#e05c5c", "#6c757d"];
@@ -17,6 +18,7 @@ interface Props {
 
 export default function ProjectsTopbar({ query = "", onSearch, onProjectCreated }: Props) {
   const router = useRouter();
+  const t = useTranslations("projects");
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
@@ -41,8 +43,8 @@ export default function ProjectsTopbar({ query = "", onSearch, onProjectCreated 
   const handleCreate = async () => {
     const trimmed = name.trim();
     if (!trimmed) return;
-    if (!code.trim()) { setCodeError("Project code is required"); return; }
-    if (!/^[A-Z][A-Z0-9]{0,9}$/.test(code)) { setCodeError("Must start with an uppercase letter (eg. WEB)"); return; }
+    if (!code.trim()) { setCodeError(t("form.codeRequired")); return; }
+    if (!/^[A-Z][A-Z0-9]{0,9}$/.test(code)) { setCodeError(t("form.codePattern")); return; }
     setCodeError("");
     setLoading(true);
     try {
@@ -53,12 +55,12 @@ export default function ProjectsTopbar({ query = "", onSearch, onProjectCreated 
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        const msg = body?.error?.formErrors?.[0] ?? body?.error ?? "Error creating project";
-        toast.error(typeof msg === "string" ? msg : "Error creating project");
+        const msg = body?.error?.formErrors?.[0] ?? body?.error ?? t("errorCreating");
+        toast.error(typeof msg === "string" ? msg : t("errorCreating"));
         return;
       }
       const created = await res.json();
-      toast.success("Project created");
+      toast.success(t("created"));
       setOpen(false);
       setName("");
       setCode("");
@@ -67,7 +69,7 @@ export default function ProjectsTopbar({ query = "", onSearch, onProjectCreated 
       onProjectCreated?.(created.data);
       router.refresh();
     } catch {
-      toast.error("Error creating project");
+      toast.error(t("errorCreating"));
     } finally {
       setLoading(false);
     }
@@ -76,7 +78,7 @@ export default function ProjectsTopbar({ query = "", onSearch, onProjectCreated 
   return (
     <>
       <div className="h-12 bg-white border-b border-gray-100 flex items-center px-5 gap-3 flex-shrink-0">
-        <span className="text-sm font-semibold text-gray-800">Progetti</span>
+        <span className="text-sm font-semibold text-gray-800">{t("title")}</span>
         <div className="flex-1" />
         <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 min-w-[160px]">
           <svg className="w-3.5 h-3.5 opacity-40 flex-shrink-0" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.3">
@@ -86,7 +88,7 @@ export default function ProjectsTopbar({ query = "", onSearch, onProjectCreated 
             type="text"
             value={query}
             onChange={(e) => onSearch?.(e.target.value)}
-            placeholder="Search project..."
+            placeholder={t("searchPlaceholder")}
             className="text-xs text-gray-700 bg-transparent outline-none w-full placeholder:text-gray-400"
           />
           {query && (
@@ -101,50 +103,50 @@ export default function ProjectsTopbar({ query = "", onSearch, onProjectCreated 
           onClick={() => setOpen(true)}
           className="bg-accent text-white text-xs px-3 py-1.5 rounded-lg font-medium hover:opacity-90"
         >
-          + New project
+          {t("new")}
         </button>
       </div>
 
-      <Modal open={open} onClose={() => setOpen(false)} title="Nuovo progetto">
+      <Modal open={open} onClose={() => setOpen(false)} title={t("createProject")}>
         <div className="space-y-3">
               <div>
-                <label className="text-xs text-gray-500 font-medium">Nome *</label>
+                <label className="text-xs text-gray-500 font-medium">{t("form.name")}</label>
                 <input
                   autoFocus
                   value={name}
                   onChange={(e) => { setName(e.target.value); suggestCode(e.target.value); }}
                   onKeyDown={(e) => { if (e.key === "Enter") handleCreate(); if (e.key === "Escape") setOpen(false); }}
-                  placeholder="Eg. Company website"
+                  placeholder={t("form.namePlaceholder")}
                   className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 outline-none focus:border-accent focus:ring-1 focus:ring-accent/20"
                 />
               </div>
               <div>
-                <label className="text-xs text-gray-500 font-medium">Codice progetto *</label>
+                <label className="text-xs text-gray-500 font-medium">{t("form.code")}</label>
                 <div className="mt-1 flex items-center gap-2">
                   <input
                     value={code}
                     onChange={(e) => { setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10)); setCodeError(""); }}
-                    placeholder="Eg. WEB"
+                    placeholder={t("form.codePlaceholder")}
                     className={`w-full border rounded-lg px-3 py-2 text-sm font-mono text-gray-900 outline-none focus:ring-1 ${codeError ? "border-red-400 focus:border-red-400 focus:ring-red-200" : "border-gray-200 focus:border-accent focus:ring-accent/20"}`}
                   />
                 </div>
                 {codeError
                   ? <p className="text-[10px] text-red-500 mt-1">{codeError}</p>
-                  : <p className="text-[10px] text-gray-400 mt-1">Used for ticket IDs (eg. WEB-1, WEB-2). Uppercase letters and numbers only.</p>
+                  : <p className="text-[10px] text-gray-400 mt-1">{t("form.codeHelper")}</p>
                 }
               </div>
               <div>
-                <label className="text-xs text-gray-500 font-medium">Descrizione</label>
+                <label className="text-xs text-gray-500 font-medium">{t("form.description")}</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Optional description..."
+                  placeholder={t("form.descriptionPlaceholder")}
                   rows={2}
                   className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 resize-none"
                 />
               </div>
               <div>
-                <label className="text-xs text-gray-500 font-medium">Colore</label>
+                <label className="text-xs text-gray-500 font-medium">{t("form.color")}</label>
                 <div className="flex gap-2 mt-1.5">
                   {COLORS.map((c) => (
                     <button
@@ -167,14 +169,14 @@ export default function ProjectsTopbar({ query = "", onSearch, onProjectCreated 
                 onClick={() => setOpen(false)}
                 className="text-xs px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50"
               >
-                Annulla
+                {t("cancel")}
               </button>
               <button
                 onClick={handleCreate}
                 disabled={loading || !name.trim() || !code.trim()}
                 className="text-xs px-4 py-2 rounded-lg bg-accent text-white font-medium hover:opacity-90 disabled:opacity-50"
               >
-                {loading ? "Creazione..." : "Crea progetto"}
+                {loading ? t("creating") : t("createProject")}
               </button>
             </div>
       </Modal>

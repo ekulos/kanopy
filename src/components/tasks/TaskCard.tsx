@@ -57,10 +57,10 @@ export default function TaskCard({ task, projectId, onDeleted }: Props) {
         </p>
 
         <div className="flex items-center gap-1.5 flex-wrap">
-          {/* Priorità */}
+          {/* Priority */}
           <PriorityBadge priority={task.priority} />
 
-          {/* Sotto-task */}
+          {/* Subtasks */}
           {totalSubtasks > 0 && (
             <span className="text-[10px] text-gray-400 flex items-center gap-0.5">
               <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.3">
@@ -70,7 +70,7 @@ export default function TaskCard({ task, projectId, onDeleted }: Props) {
             </span>
           )}
 
-          {/* Commenti */}
+          {/* Comments */}
           {(task._count?.comments ?? 0) > 0 && (
             <span className="text-[10px] text-gray-400 flex items-center gap-0.5">
               <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.3">
@@ -88,7 +88,7 @@ export default function TaskCard({ task, projectId, onDeleted }: Props) {
           )}
         </div>
 
-        {/* Progress bar sotto-task */}
+        {/* Subtask progress bar */}
         {totalSubtasks > 0 && (
           <div className="mt-2 flex items-center gap-2">
             <ProgressBar done={doneSubtasks} total={totalSubtasks} height="xs" className="flex-1" />

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import toast from "react-hot-toast";
+import { useTranslations } from "next-intl";
 import { PROJECT_STATUS_LABELS } from "@/lib/utils";
 import type { Project, User, ProjectStatus } from "@/types";
 import Modal from "@/components/ui/Modal";
@@ -17,6 +18,10 @@ interface Props {
 
 export default function ProjectDetailTopbar({ project, currentView, teamMembers = [] }: Props) {
   const router = useRouter();
+  const tp = useTranslations("projects");
+  const tt = useTranslations("tasks");
+  const ttask = useTranslations("task");
+  const tlbl = useTranslations("labels");
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -88,11 +93,11 @@ export default function ProjectDetailTopbar({ project, currentView, teamMembers 
         }),
       });
       if (!res.ok) throw new Error();
-      toast.success("Progetto aggiornato");
+      toast.success(tp("updated"));
       setEditOpen(false);
       router.refresh();
     } catch {
-      toast.error("Errore nel salvataggio");
+      toast.error(tp("errorSaving"));
     } finally {
       setEditSaving(false);
     }
@@ -109,7 +114,7 @@ export default function ProjectDetailTopbar({ project, currentView, teamMembers 
         body: JSON.stringify({ title: trimmed, description: description.trim() || undefined, projectId: project.id, priority, assigneeIds: selectedAssignees }),
       });
       if (!res.ok) throw new Error();
-      toast.success("Task creato");
+      toast.success(tt("created"));
       setOpen(false);
       setTitle("");
       setDescription("");
@@ -117,7 +122,7 @@ export default function ProjectDetailTopbar({ project, currentView, teamMembers 
       setSelectedAssignees([]);
       router.refresh();
     } catch {
-      toast.error("Errore nella creazione del task");
+      toast.error(tt("errorCreating"));
     } finally {
       setLoading(false);
     }
@@ -131,7 +136,7 @@ export default function ProjectDetailTopbar({ project, currentView, teamMembers 
           <svg className="w-3.5 h-3.5" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
             <path d="M9 2L4 7l5 5" />
           </svg>
-          Progetti
+          {tp("title")}
         </Link>
         <span className="text-gray-300 text-xs">/</span>
         <span className="text-sm font-medium text-gray-800 truncate max-w-[200px]">
@@ -167,7 +172,7 @@ export default function ProjectDetailTopbar({ project, currentView, teamMembers 
               <rect x="0" y="6" width="14" height="2" rx="1" />
               <rect x="0" y="11" width="14" height="2" rx="1" />
             </svg>
-            Lista
+            List
           </button>
         </div>
 
@@ -175,7 +180,7 @@ export default function ProjectDetailTopbar({ project, currentView, teamMembers 
 
         <button
           onClick={openEdit}
-          title="Impostazioni progetto"
+          title="Project settings"
           className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors text-gray-400 hover:text-gray-700"
         >
           <svg className="w-3.5 h-3.5" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round">
@@ -188,35 +193,35 @@ export default function ProjectDetailTopbar({ project, currentView, teamMembers 
           onClick={() => setOpen(true)}
           className="bg-accent text-white text-xs px-3 py-1.5 rounded-lg font-medium hover:opacity-90"
         >
-          + Nuovo task
+          {tt("new")}
         </button>
       </div>
 
-      <Modal open={open} onClose={() => setOpen(false)} title="Nuovo task">
+      <Modal open={open} onClose={() => setOpen(false)} title={tt("new")}>
         <div className="space-y-3">
               <div>
-                <label className="text-xs text-gray-500 font-medium">Titolo *</label>
+                <label className="text-xs text-gray-500 font-medium">{tt("headers.title")} *</label>
                 <input
                   autoFocus
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") handleCreate(); if (e.key === "Escape") setOpen(false); }}
-                  placeholder="Es. Implementare login"
+                  placeholder={tt("taskTitlePlaceholder")}
                   className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 outline-none focus:border-accent focus:ring-1 focus:ring-accent/20"
                 />
               </div>
               <div>
-                <label className="text-xs text-gray-500 font-medium">Descrizione</label>
+                <label className="text-xs text-gray-500 font-medium">{ttask("descriptionLabel")}</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Descrizione opzionale..."
+                  placeholder={ttask("addDescriptionPlaceholder")}
                   rows={3}
                   className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 resize-none"
                 />
               </div>
               <div>
-                <label className="text-xs text-gray-500 font-medium">Priorità</label>
+                <label className="text-xs text-gray-500 font-medium">{ttask("sections.priority")}</label>
                 <div className="flex gap-2 mt-1.5">
                   {(["high", "medium", "low"] as const).map((p) => (
                     <button
@@ -229,8 +234,8 @@ export default function ProjectDetailTopbar({ project, currentView, teamMembers 
                             : "bg-blue-50 border-blue-300 text-blue-800"
                           : "bg-transparent border-gray-200 text-gray-500 hover:border-gray-300"
                       }`}
-                    >
-                      {p === "high" ? "Alta" : p === "medium" ? "Media" : "Bassa"}
+                      >
+                      {tlbl(`priority.${p}`)}
                     </button>
                   ))}
                 </div>
@@ -238,7 +243,7 @@ export default function ProjectDetailTopbar({ project, currentView, teamMembers 
 
               {teamMembers.length > 0 && (
                 <div>
-                  <label className="text-xs text-gray-500 font-medium">Assegnatari</label>
+                  <label className="text-xs text-gray-500 font-medium">{ttask("sections.assignees")}</label>
                   <div className="relative mt-1.5" ref={pickerRef}>
                     <button
                       type="button"
@@ -246,7 +251,7 @@ export default function ProjectDetailTopbar({ project, currentView, teamMembers 
                       className="w-full flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-500 hover:border-gray-300 bg-white text-left"
                     >
                       {selectedAssignees.length === 0 ? (
-                        <span className="text-gray-400">Nessun assegnatario</span>
+                        <span className="text-gray-400">{tt("noAssignee")}</span>
                       ) : (
                         <div className="flex items-center gap-1.5 flex-wrap">
                           {selectedAssignees.map((id) => {
@@ -289,27 +294,27 @@ export default function ProjectDetailTopbar({ project, currentView, teamMembers 
               )}
             </div>
             <div className="flex justify-end gap-2 mt-5">
-              <button
+                <button
                 onClick={() => setOpen(false)}
                 className="text-xs px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50"
               >
-                Annulla
+                {tp("cancel")}
               </button>
               <button
                 onClick={handleCreate}
                 disabled={loading || !title.trim()}
                 className="text-xs px-4 py-2 rounded-lg bg-accent text-white font-medium hover:opacity-90 disabled:opacity-50"
               >
-                {loading ? "Creazione..." : "Crea task"}
+                {loading ? tt("creating") : tt("new")}
               </button>
             </div>
       </Modal>
 
       {/* ─── Edit project modal ─────────────────────────────────────────── */}
-      <Modal open={editOpen} onClose={() => setEditOpen(false)} title="Impostazioni progetto">
+      <Modal open={editOpen} onClose={() => setEditOpen(false)} title={tp("settingsTitle")}>
         <div className="space-y-3 mt-1">
           <div>
-            <label className="text-xs text-gray-500 font-medium">Nome *</label>
+            <label className="text-xs text-gray-500 font-medium">{tp("form.name")}</label>
             <input
               autoFocus
               value={editName}
@@ -318,28 +323,28 @@ export default function ProjectDetailTopbar({ project, currentView, teamMembers 
             />
           </div>
           <div>
-            <label className="text-xs text-gray-500 font-medium">Codice progetto</label>
+            <label className="text-xs text-gray-500 font-medium">{tp("form.code")}</label>
             <input
               value={editCode}
               onChange={(e) => setEditCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10))}
-              placeholder="Es. WEB"
+              placeholder={tp("form.codePlaceholder")}
               className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono text-gray-900 outline-none focus:border-accent focus:ring-1 focus:ring-accent/20"
             />
-            <p className="text-[10px] text-gray-400 mt-1">Usato per gli ID dei ticket (es. WEB-1). Solo lettere maiuscole e numeri.</p>
+              <p className="text-[10px] text-gray-400 mt-1">{tp("form.codeHelper")}</p>
           </div>
           <div>
-            <label className="text-xs text-gray-500 font-medium">Descrizione</label>
+            <label className="text-xs text-gray-500 font-medium">{tp("form.description")}</label>
             <textarea
               value={editDesc}
               onChange={(e) => setEditDesc(e.target.value)}
-              placeholder="Descrizione opzionale..."
+              placeholder={tp("form.descriptionPlaceholder")}
               rows={3}
               className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 resize-none"
             />
           </div>
           <div className="flex items-center gap-4">
             <div>
-              <label className="text-xs text-gray-500 font-medium block mb-1">Colore</label>
+              <label className="text-xs text-gray-500 font-medium block mb-1">{tp("form.color")}</label>
               <div className="flex items-center gap-2">
                 <input
                   type="color"
@@ -351,26 +356,26 @@ export default function ProjectDetailTopbar({ project, currentView, teamMembers 
               </div>
             </div>
             <div className="flex-1">
-              <label className="text-xs text-gray-500 font-medium block mb-1">Stato</label>
+              <label className="text-xs text-gray-500 font-medium block mb-1">{tp("statusLabel")}</label>
               <select
                 value={editStatus}
                 onChange={(e) => setEditStatus(e.target.value as ProjectStatus)}
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 outline-none focus:border-accent bg-white"
               >
-                {(Object.entries(PROJECT_STATUS_LABELS) as [ProjectStatus, string][]).map(([val, label]) => (
-                  <option key={val} value={val}>{label}</option>
+                {(Object.keys(PROJECT_STATUS_LABELS) as ProjectStatus[]).map((val) => (
+                  <option key={val} value={val}>{tlbl(`projectStatus.${val}`)}</option>
                 ))}
               </select>
             </div>
           </div>
           <div>
-            <label className="text-xs text-gray-500 font-medium block mb-1">Team</label>
+            <label className="text-xs text-gray-500 font-medium block mb-1">{tp("team")}</label>
             <select
               value={editTeamId}
               onChange={(e) => setEditTeamId(e.target.value)}
               className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 outline-none focus:border-accent bg-white"
             >
-              <option value="">Nessun team</option>
+              <option value="">{tp("noTeam")}</option>
               {availableTeams.map((t) => (
                 <option key={t.id} value={t.id}>{t.name}</option>
               ))}
@@ -382,14 +387,14 @@ export default function ProjectDetailTopbar({ project, currentView, teamMembers 
             onClick={() => setEditOpen(false)}
             className="text-xs px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50"
           >
-            Annulla
+            Cancel
           </button>
           <button
             onClick={handleEditSave}
             disabled={editSaving || !editName.trim()}
             className="text-xs px-4 py-2 rounded-lg bg-accent text-white font-medium hover:opacity-90 disabled:opacity-50"
           >
-            {editSaving ? "Salvataggio..." : "Salva"}
+            {editSaving ? "Saving..." : "Save"}
           </button>
         </div>
       </Modal>

@@ -9,14 +9,27 @@ export default auth((req) => {
   const isAuthPage = req.nextUrl.pathname.startsWith("/login");
   const isApiAuth = req.nextUrl.pathname.startsWith("/api/auth");
 
-  if (isApiAuth) return NextResponse.next();
+  // ensure a default language cookie exists (lang)
+  const langCookie = req.cookies.get("lang")?.value;
+  const ensureLang = (res: NextResponse) => {
+    if (!langCookie) {
+      try {
+        res.cookies.set("lang", "en", { path: "/" });
+      } catch (e) {
+        // best-effort: some runtimes may not allow cookies on certain responses
+      }
+    }
+    return res;
+  };
+
+  if (isApiAuth) return ensureLang(NextResponse.next());
   if (!isLoggedIn && !isAuthPage) {
-    return NextResponse.redirect(new URL("/login", req.nextUrl));
+    return ensureLang(NextResponse.redirect(new URL("/login", req.nextUrl)));
   }
   if (isLoggedIn && isAuthPage) {
-    return NextResponse.redirect(new URL("/projects", req.nextUrl));
+    return ensureLang(NextResponse.redirect(new URL("/projects", req.nextUrl)));
   }
-  return NextResponse.next();
+  return ensureLang(NextResponse.next());
 });
 
 export const config = {

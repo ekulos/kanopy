@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const session = await auth();
-  if (!session?.user?.id) return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ error: "Not authorized" }, { status: 401 });
 
   const body = await req.json();
   const parsed = createTaskSchema.safeParse(body);
@@ -55,14 +55,14 @@ export async function POST(req: NextRequest) {
 
   const { assigneeIds, ...taskData } = parsed.data;
 
-  // Calcola la prossima posizione nella colonna
+  // Calculate next position in the column
   const lastTask = await prisma.task.findFirst({
     where: { projectId: taskData.projectId, status: taskData.status, parentId: taskData.parentId ?? null },
     orderBy: { position: "desc" },
   });
   const position = (lastTask?.position ?? -1) + 1;
 
-  // Calcola il prossimo ticketNumber per il progetto
+  // Calculate the next ticketNumber for the project
   const lastTicket = await prisma.task.findFirst({
     where: { projectId: taskData.projectId },
     orderBy: { ticketNumber: "desc" },
@@ -106,7 +106,7 @@ export async function DELETE(req: NextRequest) {
   const ids: string[] = z.array(z.string()).parse(body.ids);
   if (ids.length === 0) return NextResponse.json({ error: "No IDs provided" }, { status: 400 });
 
-  // Verifica ownership: tutti i task devono appartenere all'utente
+  // Verify ownership: all tasks must belong to the user
   const count = await prisma.task.count({
     where: { id: { in: ids }, project: { ownerId: session.user.id } },
   });

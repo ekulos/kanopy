@@ -1,7 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { format, isToday, isTomorrow, isPast, parseISO } from "date-fns";
-import { it } from "date-fns/locale";
 import type { TaskStatus, TaskPriority, ProjectStatus } from "@/types";
 
 export function cn(...inputs: ClassValue[]) {
@@ -13,9 +12,9 @@ export function cn(...inputs: ClassValue[]) {
 export function formatDueDate(date: string | Date | null): string {
   if (!date) return "";
   const d = typeof date === "string" ? parseISO(date) : date;
-  if (isToday(d)) return "oggi";
-  if (isTomorrow(d)) return "domani";
-  return format(d, "d MMM", { locale: it });
+  if (isToday(d)) return "Today";
+  if (isTomorrow(d)) return "Tomorrow";
+  return format(d, "d MMM");
 }
 
 export function isDueLate(date: string | Date | null): boolean {
@@ -27,9 +26,9 @@ export function isDueLate(date: string | Date | null): boolean {
 // ─── Status helpers ───────────────────────────────────────────────────────────
 
 export const STATUS_LABELS: Record<TaskStatus, string> = {
-  todo: "Da fare",
-  in_progress: "In corso",
-  done: "Fatto",
+  todo: "To do",
+  in_progress: "In progress",
+  done: "Done",
 };
 
 export const STATUS_COLORS: Record<TaskStatus, { bg: string; text: string; border: string }> = {
@@ -45,9 +44,9 @@ export const STATUS_DOT_COLORS: Record<TaskStatus, string> = {
 };
 
 export const PRIORITY_LABELS: Record<TaskPriority, string> = {
-  low: "Bassa",
-  medium: "Media",
-  high: "Alta",
+  low: "Low",
+  medium: "Medium",
+  high: "High",
 };
 
 export const PRIORITY_COLORS: Record<TaskPriority, { bg: string; text: string }> = {
@@ -57,10 +56,10 @@ export const PRIORITY_COLORS: Record<TaskPriority, { bg: string; text: string }>
 };
 
 export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
-  active: "Attivo",
-  on_hold: "In attesa",
-  completed: "Completato",
-  archived: "Archiviato",
+  active: "Active",
+  on_hold: "On hold",
+  completed: "Completed",
+  archived: "Archived",
 };
 
 // ─── CSV parsing helpers ──────────────────────────────────────────────────────

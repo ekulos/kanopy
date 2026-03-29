@@ -40,7 +40,7 @@ export default async function TaskDetailPage({ params }: Props) {
 
   if (!task) notFound();
 
-  // Recupera i membri del team del progetto per l'assegnazione
+  // Fetch the project's team members for assignment
   const projectWithTeam = await prisma.project.findUnique({
     where: { id: task.projectId },
     include: {

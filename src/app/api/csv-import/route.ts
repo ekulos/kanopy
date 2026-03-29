@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
 
   const { projectId, rows } = parsed.data;
 
-  // Verifica che il progetto appartenga all'utente
+  // Verify that the project belongs to the user
   const project = await prisma.project.findFirst({
     where: { id: projectId, ownerId: session.user.id },
   });
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     const row = rows[i] as CsvTaskRow;
     const rowNum = i + 1;
 
-    // Validazione
+    // Validation
     if (!row.title?.trim()) {
       result.errors.push({ row: rowNum, message: "Title is required" });
       result.skipped++;
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
       dueDate = d;
     }
 
-    // Risolvi assegnatari per email
+    // Resolve assignees by email
     const assigneeEmails = (row.assignees ?? "")
       .split(",")
       .map((e) => e.trim().toLowerCase())
@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
       assigneeIds = users.map((u) => u.id);
     }
 
-    // Risolvi task padre per sotto-task
+    // Resolve parent task for subtasks
     let parentId: string | null = null;
     if (row.main_task?.trim()) {
       const parentTask = await prisma.task.findFirst({
@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
       parentId = parentTask.id;
     }
 
-    // Calcola posizione
+    // Calculate position
     const lastTask = await prisma.task.findFirst({
       where: { projectId, status: normalizeCsvStatus(row.status), parentId },
       orderBy: { position: "desc" },

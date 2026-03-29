@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { cn, formatDueDate, isDueLate } from "@/lib/utils";
+import { getTranslations } from "next-intl/server";
 import StatusBadge from "@/components/ui/StatusBadge";
 import PriorityBadge from "@/components/ui/PriorityBadge";
 import ProgressBar from "@/components/ui/ProgressBar";
@@ -10,6 +11,8 @@ export const dynamic = "force-dynamic";
 
 export default async function MyTasksPage() {
   const session = await auth();
+
+  const t = await getTranslations("tasks");
 
   const tasks = await prisma.task.findMany({
     where: {
@@ -29,12 +32,12 @@ export default async function MyTasksPage() {
     <div className="flex flex-col h-full">
       {/* Topbar */}
       <div className="h-12 bg-white border-b border-gray-100 flex items-center px-5 flex-shrink-0">
-        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
           <svg className="w-4 h-4 text-accent" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
             <rect x="2" y="2" width="12" height="12" rx="2" />
             <path d="M5 8l2 2 4-4" />
           </svg>
-          <span className="text-sm font-semibold text-gray-800">I miei task</span>
+          <span className="text-sm font-semibold text-gray-800">{t("myTitle")}</span>
         </div>
         <div className="ml-3 text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
           {tasks.length}
@@ -49,19 +52,19 @@ export default async function MyTasksPage() {
               <rect x="4" y="4" width="24" height="24" rx="4" />
               <path d="M10 16l4 4 8-8" />
             </svg>
-            <p className="text-sm">Nessun task assegnato a te.</p>
+            <p className="text-sm">{t("noTasksAssigned")}</p>
           </div>
         ) : (
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
             <table className="w-full" style={{ tableLayout: "fixed" }}>
               <thead>
-                <tr className="border-b border-gray-100">
-                  <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-4 py-3 w-[32%]">Titolo</th>
-                  <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-4 py-3 w-[18%]">Progetto</th>
-                  <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-4 py-3 w-[13%]">Stato</th>
-                  <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-4 py-3 w-[11%]">Priorità</th>
-                  <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-4 py-3 w-[13%]">Scadenza</th>
-                  <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-4 py-3 w-[13%]">Subtask</th>
+                  <tr className="border-b border-gray-100">
+                  <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-4 py-3 w-[32%]">{t("headers.title")}</th>
+                  <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-4 py-3 w-[18%]">{t("headers.project")}</th>
+                  <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-4 py-3 w-[13%]">{t("headers.status")}</th>
+                  <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-4 py-3 w-[11%]">{t("headers.priority")}</th>
+                  <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-4 py-3 w-[13%]">{t("headers.due")}</th>
+                  <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-4 py-3 w-[13%]">{t("headers.subtasks")}</th>
                 </tr>
               </thead>
               <tbody>

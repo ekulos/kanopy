@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import Avatar from "@/components/ui/Avatar";
 import Modal from "@/components/ui/Modal";
@@ -39,13 +40,8 @@ type TeamFull = {
 
 // ─── Role badge ───────────────────────────────────────────────────────────────
 
-const ROLE_LABELS: Record<TeamRole, string> = {
-  owner: "Owner",
-  admin: "Admin",
-  member: "Member",
-};
-
 function RoleBadge({ role }: { role: TeamRole }) {
+  const t = useTranslations("teams");
   return (
     <span
       className={cn(
@@ -57,7 +53,7 @@ function RoleBadge({ role }: { role: TeamRole }) {
           : "bg-gray-100 text-gray-500"
       )}
     >
-      {ROLE_LABELS[role]}
+      {t(`role.${role}`)}
     </span>
   );
 }
@@ -96,6 +92,8 @@ function TeamDetail({
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  const t = useTranslations("teams");
+
   async function handleSave() {
     setSaving(true);
     try {
@@ -108,12 +106,12 @@ function TeamDetail({
           color: editColor,
         }),
       });
-      if (!res.ok) throw new Error("Errore aggiornamento");
+      if (!res.ok) throw new Error("Update error");
       onUpdated({ id: team.id, name: editName.trim(), description: editDesc.trim() || null, color: editColor });
       setEditing(false);
-      toast.success("Team updated");
+      toast.success(t("updated"));
     } catch {
-      toast.error("Errore nell'aggiornamento del team");
+      toast.error(t("errorUpdating"));
     } finally {
       setSaving(false);
     }
@@ -130,13 +128,13 @@ function TeamDetail({
       });
       const json = await res.json();
       if (!res.ok) {
-        throw new Error(json.error?.message ?? json.error ?? "Utente non trovato");
+        throw new Error(json.error?.message ?? json.error ?? t("memberNotFound") ?? "User not found");
       }
       await onRefresh(team.id);
       setAddEmail("");
-      toast.success("Member added");
+      toast.success(t("memberAdded"));
     } catch (e: any) {
-      toast.error(e.message);
+      toast.error(e.message || t("errorUpdating"));
     } finally {
       setAddLoading(false);
     }
@@ -151,12 +149,12 @@ function TeamDetail({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: removeTarget.userId }),
       });
-      if (!res.ok) throw new Error("Errore rimozione");
+      if (!res.ok) throw new Error("Removal error");
       await onRefresh(team.id);
       setRemoveTarget(null);
-      toast.success("Member removed");
+      toast.success(t("memberRemoved"));
     } catch {
-      toast.error("Error removing member");
+      toast.error(t("errorRemoving"));
     } finally {
       setRemoving(false);
     }
@@ -166,11 +164,11 @@ function TeamDetail({
     setDeleting(true);
     try {
       const res = await fetch(`/api/teams/${team.id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Errore eliminazione");
+      if (!res.ok) throw new Error("Deletion error");
       onDeleted(team.id);
-      toast.success("Team eliminato");
+      toast.success(t("deleted"));
     } catch {
-      toast.error("Errore nell'eliminazione del team");
+      toast.error(t("errorDeleting"));
     } finally {
       setDeleting(false);
       setDeleteOpen(false);
@@ -204,7 +202,7 @@ function TeamDetail({
               </div>
               <input
                 className="w-full text-sm text-gray-500 border border-gray-200 rounded-md px-2 py-1 outline-none focus:border-accent"
-                placeholder="Descrizione (facoltativa)"
+                placeholder="Description (optional)"
                 value={editDesc}
                 onChange={(e) => setEditDesc(e.target.value)}
               />
@@ -245,14 +243,14 @@ function TeamDetail({
               onClick={() => setEditing(true)}
               className="text-xs text-gray-500 hover:text-gray-800 border border-gray-200 px-2.5 py-1.5 rounded-md hover:bg-gray-50 transition-colors"
             >
-              Modifica
+              Edit
             </button>
             {myRole === "owner" && (
               <button
                 onClick={() => setDeleteOpen(true)}
                 className="text-xs text-red-500 hover:text-red-700 border border-red-200 px-2.5 py-1.5 rounded-md hover:bg-red-50 transition-colors"
               >
-                Elimina
+                Delete
               </button>
             )}
           </div>
@@ -272,7 +270,7 @@ function TeamDetail({
       {/* Members list */}
       <section className="mb-6">
         <h3 className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-3">
-          Membri
+          Members
         </h3>
         <ul className="space-y-1">
           {team.members.map((m) => (
@@ -285,11 +283,11 @@ function TeamDetail({
                 <p className="text-xs text-gray-400 truncate">{m.user?.email}</p>
               </div>
               <RoleBadge role={m.role} />
-              {canManage && m.role !== "owner" && m.userId !== currentUserId && (
+                {canManage && m.role !== "owner" && m.userId !== currentUserId && (
                 <button
                   onClick={() => setRemoveTarget(m)}
                   className="ml-1 text-gray-300 hover:text-red-400 transition-colors"
-                  title="Rimuovi membro"
+                  title="Remove member"
                 >
                   <svg
                     className="w-4 h-4"
@@ -342,9 +340,9 @@ function TeamDetail({
 
       <ConfirmModal
         open={!!removeTarget}
-        title="Remove member"
-        message={`Are you sure you want to remove ${removeTarget?.user?.name ?? "this member"} from the team?`}
-        confirmLabel="Remove"
+        title={t("removeMember")}
+        message={t("removeMemberMessage", { name: removeTarget?.user?.name ?? t("membersLabel") })}
+        confirmLabel={t("removeConfirmLabel")}
         danger
         loading={removing}
         onConfirm={handleRemoveMember}
@@ -353,9 +351,9 @@ function TeamDetail({
 
       <ConfirmModal
         open={deleteOpen}
-        title="Delete team"
-        message={`The team "${team.name}" will be permanently deleted. This action cannot be undone.`}
-        confirmLabel="Delete"
+        title={t("deleteTeam")}
+        message={t("deleteTeamMessage", { name: team.name })}
+        confirmLabel={t("delete")}
         danger
         loading={deleting}
         onConfirm={handleDelete}
@@ -373,6 +371,7 @@ interface Props {
 }
 
 export default function TeamsView({ initialTeams, currentUserId }: Props) {
+  const t = useTranslations("teams");
   const [teams, setTeams] = useState<TeamFull[]>(initialTeams);
   const [selectedId, setSelectedId] = useState<string | null>(
     initialTeams[0]?.id ?? null
@@ -411,7 +410,7 @@ export default function TeamsView({ initialTeams, currentUserId }: Props) {
         }),
       });
       const { data, error } = await res.json();
-      if (!res.ok) throw new Error(error?.message ?? "Errore creazione");
+      if (!res.ok) throw new Error(error?.message ?? "Creation error");
       // Fetch full team detail (includes _count)
       const detailRes = await fetch(`/api/teams/${data.id}`);
       const detail = detailRes.ok ? (await detailRes.json()).data : data;
@@ -421,7 +420,7 @@ export default function TeamsView({ initialTeams, currentUserId }: Props) {
       setNewName("");
       setNewDesc("");
       setNewColor("#7c5cbf");
-      toast.success("Team creato");
+      toast.success("Team created");
     } catch (e: any) {
       toast.error(e.message);
     } finally {
@@ -433,12 +432,12 @@ export default function TeamsView({ initialTeams, currentUserId }: Props) {
     <div className="flex flex-col h-full">
       {/* Topbar */}
       <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-100 bg-white flex-shrink-0">
-        <h1 className="text-[15px] font-semibold text-gray-800 flex-1">Team</h1>
+        <h1 className="text-[15px] font-semibold text-gray-800 flex-1">{t("title")}</h1>
         <button
             onClick={() => setCreateOpen(true)}
             className="flex items-center gap-1.5 text-xs font-medium bg-accent text-white px-3 py-1.5 rounded-md hover:bg-accent/90 transition-colors"
           >
-            <span className="text-base leading-none">+</span> New team
+            <span className="text-base leading-none">+</span> {t("new")}
           </button>
       </div>
 
@@ -446,7 +445,7 @@ export default function TeamsView({ initialTeams, currentUserId }: Props) {
         {/* Team list */}
         <div className="w-60 flex-shrink-0 border-r border-gray-100 bg-[#f9f9fb] overflow-y-auto">
           {teams.length === 0 ? (
-            <p className="text-xs text-gray-400 text-center mt-10 px-4">No teams. Create one!</p>
+            <p className="text-xs text-gray-400 text-center mt-10 px-4">{t("noTeams")}</p>
           ) : (
             <ul className="p-2 space-y-0.5">
               {teams.map((t) => (
@@ -499,21 +498,21 @@ export default function TeamsView({ initialTeams, currentUserId }: Props) {
           ) : (
             <div className="flex items-center justify-center h-full text-sm text-gray-400">
               {teams.length === 0
-                ? "Crea il tuo primo team per iniziare"
-                : "Seleziona un team"}
+                ? t("createFirstTeam")
+                : t("selectTeam")}
             </div>
           )}
         </div>
       </div>
 
       {/* Create team modal */}
-      <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="Crea team">
+      <Modal open={createOpen} onClose={() => setCreateOpen(false)} title={t("createTeam")}>
         <div className="space-y-3 mt-1">
           <div>
-            <label className="text-xs font-medium text-gray-500 mb-1 block">Nome *</label>
+            <label className="text-xs font-medium text-gray-500 mb-1 block">Name *</label>
             <input
               className="w-full text-sm border border-gray-200 rounded-md px-3 py-2 outline-none focus:border-accent"
-              placeholder="Es. Design team"
+              placeholder="E.g. Design team"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleCreate()}
@@ -521,16 +520,16 @@ export default function TeamsView({ initialTeams, currentUserId }: Props) {
             />
           </div>
           <div>
-            <label className="text-xs font-medium text-gray-500 mb-1 block">Descrizione</label>
+            <label className="text-xs font-medium text-gray-500 mb-1 block">Description</label>
             <input
               className="w-full text-sm border border-gray-200 rounded-md px-3 py-2 outline-none focus:border-accent"
-              placeholder="Facoltativa"
+              placeholder="Optional"
               value={newDesc}
               onChange={(e) => setNewDesc(e.target.value)}
             />
           </div>
           <div className="flex items-center gap-2">
-            <label className="text-xs font-medium text-gray-500">Colore</label>
+            <label className="text-xs font-medium text-gray-500">Color</label>
             <input
               type="color"
               className="w-8 h-8 rounded cursor-pointer border border-gray-200"
@@ -545,14 +544,14 @@ export default function TeamsView({ initialTeams, currentUserId }: Props) {
             onClick={() => setCreateOpen(false)}
             className="text-sm px-3 py-1.5 rounded-md border border-gray-200 text-gray-600 hover:bg-gray-50"
           >
-            Annulla
+            {t("cancel")}
           </button>
           <button
             onClick={handleCreate}
             disabled={creating || !newName.trim()}
             className="text-sm px-4 py-1.5 rounded-md bg-accent text-white font-medium hover:bg-accent/90 disabled:opacity-50"
           >
-              {creating ? "Creating…" : "Create"}
+              {creating ? t("creating") : t("create")}
           </button>
         </div>
       </Modal>

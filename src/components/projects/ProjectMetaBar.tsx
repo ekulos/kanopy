@@ -1,4 +1,5 @@
 import AvatarStack from "@/components/ui/AvatarStack";
+import { useTranslations } from "next-intl";
 import type { Project } from "@/types";
 
 interface Props {
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export default function ProjectMetaBar({ project, filterOpen, activeFilterCount = 0, onToggleFilter }: Props) {
+  const t = useTranslations("projects");
   const tasks = project.tasks ?? [];
   const total = tasks.length;
   const wip = tasks.filter((t) => t.status === "in_progress").length;
@@ -28,15 +30,15 @@ export default function ProjectMetaBar({ project, filterOpen, activeFilterCount 
       {/* Stats */}
       <div className="flex items-center gap-1 text-xs text-gray-400">
         <span className="text-sm font-semibold text-gray-800">{total}</span>
-        total tasks
+        {t("stats.totalTasks")}
       </div>
       <div className="flex items-center gap-1 text-xs text-gray-400">
         <span className="text-sm font-semibold text-gray-800">{wip}</span>
-        in progress
+        {t("stats.inProgress")}
       </div>
       <div className="flex items-center gap-1 text-xs text-gray-400">
         <span className="text-sm font-semibold text-gray-800">{done}</span>
-        completed
+        {t("stats.completed")}
       </div>
 
       <div className="w-px h-5 bg-gray-100" />
@@ -44,7 +46,7 @@ export default function ProjectMetaBar({ project, filterOpen, activeFilterCount 
       {/* Avatars */}
       <div className="flex items-center gap-2">
         <AvatarStack users={members.flatMap((m) => (m.user ? [m.user] : []))} max={5} size="sm" />
-        <span className="text-xs text-gray-400">{members.length} members</span>
+        <span className="text-xs text-gray-400">{members.length} {t("members")}</span>
       </div>
 
       <div className="ml-auto">
@@ -59,7 +61,7 @@ export default function ProjectMetaBar({ project, filterOpen, activeFilterCount 
           <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round">
             <path d="M1 3h10M3 6h6M5 9h2" />
           </svg>
-          Filters
+          {t("filters")}
           {activeFilterCount > 0 && (
             <span className="ml-0.5 bg-accent text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-semibold leading-none">
               {activeFilterCount}

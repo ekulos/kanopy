@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import SubtaskList from "./SubtaskList";
@@ -15,6 +16,7 @@ interface Props {
 
 export default function TaskDetailMain({ task, currentUserId }: Props) {
   const router = useRouter();
+  const t = useTranslations("task");
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description ?? "");
   const [saving, setSaving] = useState(false);
@@ -29,10 +31,10 @@ export default function TaskDetailMain({ task, currentUserId }: Props) {
         body: JSON.stringify({ title: title.trim(), description: description.trim() || null }),
       });
       if (!res.ok) throw new Error();
-      toast.success("Task saved");
+      toast.success(t("saved"));
       router.refresh();
     } catch {
-      toast.error("Error saving");
+      toast.error(t("errorSaving"));
     } finally {
       setSaving(false);
     }
@@ -40,7 +42,7 @@ export default function TaskDetailMain({ task, currentUserId }: Props) {
 
   return (
     <div className="flex-1 overflow-y-auto px-7 py-6 min-w-0">
-      {/* Titolo */}
+      {/* Title */}
       <textarea
         value={title}
         onChange={(e) => setTitle(e.target.value)}
@@ -48,25 +50,25 @@ export default function TaskDetailMain({ task, currentUserId }: Props) {
         rows={1}
       />
 
-      {/* Breadcrumb progetto */}
+      {/* Project breadcrumb */}
       <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-5">
         <div className="w-2 h-2 rounded-full" style={{ background: task.project?.color ?? "#888" }} />
         {task.project?.name} &nbsp;·&nbsp; {task.project?.code ? `${task.project.code}-${task.ticketNumber}` : `#${task.id.slice(-4).toUpperCase()}`}
         {task.parent && (
           <>
             &nbsp;·&nbsp;
-            <span className="text-gray-400">sotto-task di <span className="text-gray-600">{task.parent.title}</span></span>
+            <span className="text-gray-400">subtask of <span className="text-gray-600">{task.parent.title}</span></span>
           </>
         )}
       </div>
 
       {/* Description */}
-      <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider mb-2">Description</p>
+      <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider mb-2">{t("descriptionLabel")}</p>
       {editing ? (
         <MarkdownEditor
           value={description}
           onChange={setDescription}
-          placeholder="Add a description..."
+          placeholder={t("addDescriptionPlaceholder")}
           minHeight={120}
         />
       ) : (
@@ -77,12 +79,12 @@ export default function TaskDetailMain({ task, currentUserId }: Props) {
           {description ? (
             <MarkdownPreview content={description} />
           ) : (
-            <p className="text-sm text-gray-300">Add description...</p>
+            <p className="text-sm text-gray-300">{t("addDescriptionEmpty")}</p>
           )}
         </div>
       )}
 
-      {/* Pulsante salva inline */}
+      {/* Inline save button */}
       {(editing || title !== task.title || description !== (task.description ?? "")) && (
         <div className="flex gap-2 mt-2 mb-4">
             <button
@@ -90,25 +92,25 @@ export default function TaskDetailMain({ task, currentUserId }: Props) {
             disabled={saving}
             className="text-xs bg-accent text-white px-3 py-1.5 rounded-md hover:opacity-90 disabled:opacity-50"
           >
-            {saving ? "Saving..." : "Save changes"}
+            {saving ? t("saving") : t("saveChanges")}
           </button>
           <button
             onClick={() => { setTitle(task.title); setDescription(task.description ?? ""); setEditing(false); }}
             className="text-xs text-gray-400 px-2 py-1.5 hover:text-gray-600"
           >
-            Cancel
+            {t("cancel")}
           </button>
         </div>
       )}
 
       <div className="h-px bg-gray-100 my-5" />
 
-      {/* Sotto-task */}
+      {/* Subtasks */}
       <SubtaskList task={task} />
 
       <div className="h-px bg-gray-100 my-5" />
 
-      {/* Commenti */}
+      {/* Comments */}
       <CommentThread taskId={task.id} initialComments={task.comments ?? []} currentUserId={currentUserId} />
     </div>
   );

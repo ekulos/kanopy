@@ -1,0 +1,288 @@
+{
+  "app": {
+    "title": "Kanopy"
+  },
+  "login": {
+    "welcome": "Benvenuto",
+    "subtitle": "Accedi per gestire i tuoi progetti",
+    "signInWithGithub": "Accedi con GitHub",
+    "terms": "Accedendo accetti i termini di utilizzo"
+  },
+  "projects": {
+    "title": "Progetti",
+    "searchPlaceholder": "Cerca progetto...",
+    "new": "+ Nuovo progetto",
+    "noProjects": "Nessun progetto.",
+    "createProject": "Crea progetto",
+    "delete": "Elimina progetto",
+    "cancel": "Annulla",
+    "deleting": "Eliminazione...",
+    "creating": "Creazione...",
+    "created": "Progetto creato",
+    "errorCreating": "Errore nella creazione del progetto"
+    ,
+    "statusLabel": "Stato",
+    "statusAll": "Tutti",
+    "clearFilters": "Pulisci filtri",
+    "form": {
+      "name": "Nome *",
+      "namePlaceholder": "Es. Sito aziendale",
+      "code": "Codice progetto *",
+      "codePlaceholder": "Es. WEB",
+      "codeHelper": "Usato per ID ticket (es. WEB-1, WEB-2). Solo lettere maiuscole e numeri.",
+      "codeRequired": "Il codice del progetto è obbligatorio",
+      "codePattern": "Deve iniziare con una lettera maiuscola (es. WEB)",
+      "description": "Descrizione",
+      "descriptionPlaceholder": "Descrizione opzionale...",
+      "color": "Colore"
+    }
+    ,
+    "stats": {
+      "totalTasks": "task totali",
+      "inProgress": "in corso",
+      "completed": "completati"
+    },
+    "members": "membri",
+    "filters": "Filtri"
+    ,
+    "deleted": "Progetto eliminato",
+    "errorDeleting": "Errore durante l'eliminazione del progetto",
+    "createFirstProject": "Crea il tuo primo progetto per iniziare",
+    "fetchingInfo": "Recupero informazioni...",
+    "table": {
+      "project": "Progetto",
+      "status": "Stato",
+      "progress": "Progresso",
+      "team": "Team",
+      "tasks": "Task",
+      "tasksCount": "{count, plural, one {# task} other {# tasks}}"
+    },
+    "deleteModal": {
+      "rootTasks": "Task principali",
+      "subtasks": "Sotto-attività",
+      "totalDeletions": "Eliminazioni totali",
+      "items": "elementi"
+    }
+    ,
+    "updated": "Progetto aggiornato",
+    "errorSaving": "Errore durante il salvataggio",
+    "settingsTitle": "Impostazioni progetto",
+    "team": "Team",
+    "noTeam": "Nessun team",
+    "save": "Salva",
+    "saving": "Salvataggio..."
+  },
+  "tasks": {
+    "title": "Task",
+    "searchPlaceholder": "Cerca task...",
+    "clear": "Pulisci",
+    "subtasksTitle": "Sotto-attività",
+    "errorUpdatingSubtask": "Errore durante l'aggiornamento della sotto-attività",
+    "errorDeletingSubtask": "Errore durante l'eliminazione della sotto-attività",
+    "errorCreatingSubtask": "Errore durante la creazione della sotto-attività",
+    "collapse": "Comprimi",
+    "expand": "Espandi",
+    "created": "Creato",
+    "subtaskTitlePlaceholder": "Titolo sotto-attività...",
+    "subtaskDescriptionPlaceholder": "Descrizione (opzionale)...",
+    "taskTitlePlaceholder": "Titolo task...",
+    "errorCreating": "Errore durante la creazione del task",
+    "add": "Aggiungi",
+    "addSubtask": "Aggiungi sotto-attività",
+    "myTitle": "I miei task",
+    "noTasksAssigned": "Nessun task assegnato a te.",
+    "noTasksInProject": "Nessun task in questo progetto.",
+    "deleteSelected": "Elimina selezionati",
+    "cancel": "Annulla",
+    "headers": {
+      "title": "Titolo",
+      "project": "Progetto",
+      "status": "Stato",
+      "priority": "Priorità",
+      "assigned": "Assegnato",
+      "due": "Scadenza",
+      "subtasks": "Sotto-attività"
+    },
+    "selectAll": "Seleziona tutti",
+    "selectTask": "Seleziona task",
+    "deleting": "Eliminazione...",
+    "deleteCount": "Elimina {count, plural, one {# task} other {# tasks}}",
+    "deleteWarning": "Stai per eliminare {count} task",
+    "deleteWarningSubtasks": "e {subtasks} sotto-attività",
+    "irreversible": "Questa azione è irreversibile."
+    ,
+    "new": "Nuovo task",
+    "creating": "Creazione...",
+    "noAssignee": "Nessun assegnatario"
+  },
+
+  "csv": {
+    "title": "Importa CSV",
+    "dropZoneTitle": "Trascina qui il file CSV",
+    "dropZoneSubtitle": "oppure clicca per selezionare",
+    "chooseFile": "Scegli file .csv",
+    "parsingError": "Errore nel parsing del CSV",
+    "invalidFile": "Per favore carica un file .csv",
+    "importError": "Errore durante l'importazione",
+    "importedSuccess": "{count} task importati in \"{project}\"",
+    "tasksAdded": "I task sono stati aggiunti al progetto",
+    "goToTasks": "Vai ai task",
+    "importAnother": "Importa un altro",
+    "supportedColumnsTitle": "Colonne supportate",
+    "columns": {
+      "title": "Nome task",
+      "description": "Dettagli aggiuntivi",
+      "status": "todo · in_progress · done",
+      "priority": "high · medium · low",
+      "due_date": "Formato YYYY-MM-DD",
+      "assignees": "Email separate da virgola",
+      "main_task": "Titolo del task principale (crea sotto-task)"
+    },
+    "required": "obbligatorio",
+    "optional": "opzionale",
+    "preview": "Anteprima — {count} righe",
+    "valid": "{count} valide",
+    "errors": "{count} errori",
+    "changeFile": "Cambia file",
+    "importing": "Importazione...",
+    "importCount": "Importa {count, plural, one {# task} other {# tasks}}",
+    "cancel": "Annulla",
+    "rowsSkipped": "{count} righe con errori saranno saltate",
+    "ok": "ok",
+    "error": "errore",
+    "headers": {
+      "title": "Titolo",
+      "description": "Descrizione",
+      "main_task": "Task principale",
+      "status": "Stato",
+      "priority": "Priorità",
+      "due_date": "Scadenza",
+      "assignees": "Assegnatari",
+      "result": "Risultato"
+    }
+  },
+  "task": {
+    "previous": "Task precedente",
+    "next": "Task successivo",
+    "delete": "Elimina",
+    "deleteConfirmTitle": "Elimina task",
+    "deleteConfirmMessage": "Sei sicuro di voler eliminare questo task? Questa azione è irreversibile.",
+    "copyLink": "Link copiato!",
+    "deleted": "Task eliminato",
+    "errorDeleting": "Errore durante l'eliminazione del task",
+    "copyLinkTitle": "Copia link",
+    "closePanel": "Chiudi pannello",
+    "openPanel": "Apri pannello",
+    "overdue": "Scaduto",
+    "removeDueDate": "Rimuovi data",
+    "sections": {
+      "status": "Stato",
+      "priority": "Priorità",
+      "assignees": "Assegnatari",
+      "addMember": "Aggiungi membro",
+      "due": "Scadenza",
+      "subtaskProgress": "Avanzamento sotto-attività",
+      "recentActivity": "Attività recenti",
+      "comments": "Commenti"
+    },
+    "activity": {
+      "taskCreated": "Task creato",
+      "statusChanged": "Stato → {status}",
+      "assigneeAdded": "Assegnato aggiunto: {name}",
+      "commentAdded": "Commento aggiunto"
+    }
+    ,
+    "saved": "Task salvato",
+    "errorSaving": "Errore durante il salvataggio",
+    "descriptionLabel": "Descrizione",
+    "addDescriptionPlaceholder": "Aggiungi una descrizione...",
+    "addDescriptionEmpty": "Aggiungi descrizione...",
+    "saving": "Salvataggio...",
+    "saveChanges": "Salva modifiche",
+    "cancel": "Annulla",
+    "me": "Io",
+    "comment": {
+      "placeholder": "Scrivi un commento... (Cmd+Enter per inviare)",
+      "sending": "Invio...",
+      "send": "Invia",
+      "errorSending": "Errore durante l'invio del commento"
+    }
+  },
+  "common": {
+    "loading": "Caricamento...",
+    "noRecentActivity": "Nessuna attività recente"
+  },
+  "settings": {
+    "title": "Impostazioni",
+    "language": "Lingua",
+    "save": "Salva",
+    "saved": "Impostazioni salvate",
+    "languages": { "en": "Inglese", "it": "Italiano" }
+  },
+  "error": {
+    "updating": "Errore aggiornamento",
+    "loadingActivities": "Errore nel caricamento delle attività"
+  }
+  ,
+  "labels": {
+    "status": {
+      "todo": "Da fare",
+      "in_progress": "In corso",
+      "done": "Completato"
+    },
+    "priority": {
+      "low": "Bassa",
+      "medium": "Media",
+      "high": "Alta"
+    },
+    "projectStatus": {
+      "active": "Attivo",
+      "on_hold": "In sospeso",
+      "completed": "Completato",
+      "archived": "Archiviato"
+    }
+  },
+  "deadlines": {
+    "title": "Scadenze",
+    "noUpcoming": "Nessuna scadenza in arrivo.",
+    "groups": {
+      "overdue": "Scaduto",
+      "today": "Oggi",
+      "tomorrow": "Domani",
+      "week": "Questa settimana",
+      "later": "Successivamente"
+    }
+  },
+  "teams": {
+    "title": "Team",
+    "new": "Nuovo team",
+    "createTeam": "Crea team",
+    "membersLabel": "Membri",
+    "addMember": "Aggiungi",
+    "role": { "owner": "Proprietario", "admin": "Admin", "member": "Membro" },
+    "noTeams": "Nessun team. Creane uno!",
+    "createFirstTeam": "Crea il tuo primo team per iniziare",
+    "selectTeam": "Seleziona un team",
+    "removeMember": "Rimuovi membro",
+    "deleteTeam": "Elimina team",
+    "edit": "Modifica",
+    "delete": "Elimina",
+    "cancel": "Annulla",
+    "create": "Crea",
+    "creating": "Creazione…",
+    "saving": "Salvataggio…"
+    ,
+    "updated": "Team aggiornato",
+    "memberAdded": "Membro aggiunto",
+    "memberRemoved": "Membro rimosso",
+    "errorUpdating": "Errore durante l'aggiornamento del team",
+    "errorRemoving": "Errore durante la rimozione del membro",
+    "memberNotFound": "Utente non trovato",
+    "deleted": "Team eliminato",
+    "created": "Team creato",
+    "errorDeleting": "Errore durante l'eliminazione del team",
+    "removeMemberMessage": "Sei sicuro di voler rimuovere {name} dal team?",
+    "deleteTeamMessage": "Il team \"{name}\" verrà eliminato permanentemente. Questa azione non può essere annullata.",
+    "removeConfirmLabel": "Rimuovi"
+  }
+}

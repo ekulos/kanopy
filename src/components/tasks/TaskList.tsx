@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
@@ -19,6 +20,7 @@ interface Props {
 export default function TaskList({ tasks: initialTasks, projectId }: Props) {
   const router = useRouter();
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  const t = useTranslations("tasks");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -61,10 +63,10 @@ export default function TaskList({ tasks: initialTasks, projectId }: Props) {
       setTasks((prev) => prev.filter((t) => !selected.has(t.id)));
       setSelected(new Set());
       setConfirmOpen(false);
-      toast.success(`${ids.length} task deleted`);
+      toast.success(t("deletedCount", { count: ids.length }));
       router.refresh();
     } catch {
-      toast.error("Error deleting tasks");
+      toast.error(t("errorDeleting"));
     } finally {
       setDeleting(false);
     }
@@ -73,17 +75,16 @@ export default function TaskList({ tasks: initialTasks, projectId }: Props) {
   if (tasks.length === 0) {
     return (
       <div className="text-center py-20 text-gray-400">
-        <p className="text-sm">Nessun task in questo progetto.</p>
+        <p className="text-sm">{t("noTasksInProject")}</p>
       </div>
     );
   }
 
   return (
     <>
-      {/* Toolbar selezione */}
       {someSelected && (
         <div className="flex items-center gap-3 mb-2 px-1 py-2 bg-accent/5 rounded-lg border border-accent/20 animate-in fade-in">
-          <span className="text-xs font-medium text-accent ml-1">{selected.size} selected</span>
+          <span className="text-xs font-medium text-accent ml-1">{t("selected", { count: selected.size })}</span>
           <div className="flex-1" />
           <button
             onClick={() => setConfirmOpen(true)}
@@ -92,9 +93,9 @@ export default function TaskList({ tasks: initialTasks, projectId }: Props) {
             <svg className="w-3.5 h-3.5" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
               <path d="M2 4h10M5 4V2.5a.5.5 0 01.5-.5h3a.5.5 0 01.5.5V4M5.5 6.5v4M8.5 6.5v4M3 4l.8 7.2a1 1 0 001 .8h4.4a1 1 0 001-.8L11 4" />
             </svg>
-            Delete selected
+            {t("deleteSelected")}
           </button>
-          <button onClick={() => setSelected(new Set())} className="text-xs text-gray-400 hover:text-gray-600 px-2 py-1.5">Cancel</button>
+          <button onClick={() => setSelected(new Set())} className="text-xs text-gray-400 hover:text-gray-600 px-2 py-1.5">{t("cancel")}</button>
         </div>
       )}
 
@@ -113,7 +114,7 @@ export default function TaskList({ tasks: initialTasks, projectId }: Props) {
                       ? "border-accent bg-accent/20"
                       : "border-gray-300 hover:border-accent"
                   )}
-                  aria-label="Seleziona tutti"
+                  aria-label={t("selectAll")}
                 >
                   {allSelected && (
                     <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -125,12 +126,12 @@ export default function TaskList({ tasks: initialTasks, projectId }: Props) {
                   )}
                 </button>
               </th>
-                <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-3 py-3 w-[36%]">Title</th>
-                <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-3 py-3 w-[13%]">Status</th>
-                <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-3 py-3 w-[11%]">Priority</th>
-                <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-3 py-3 w-[16%]">Assigned</th>
-                <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-3 py-3 w-[12%]">Due</th>
-                <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-3 py-3 w-[10%]">Subtasks</th>
+                <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-3 py-3 w-[36%]">{t("headers.title")}</th>
+                <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-3 py-3 w-[13%]">{t("headers.status")}</th>
+                <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-3 py-3 w-[11%]">{t("headers.priority")}</th>
+                <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-3 py-3 w-[16%]">{t("headers.assigned")}</th>
+                <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-3 py-3 w-[12%]">{t("headers.due")}</th>
+                <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-3 py-3 w-[10%]">{t("headers.subtasks")}</th>
             </tr>
           </thead>
           <tbody>
@@ -155,7 +156,7 @@ export default function TaskList({ tasks: initialTasks, projectId }: Props) {
                         "w-4 h-4 rounded border-2 flex items-center justify-center transition-all",
                         isSelected ? "bg-accent border-accent" : "border-gray-300 hover:border-accent"
                       )}
-                      aria-label="Seleziona task"
+                      aria-label={t("selectTask")}
                     >
                       {isSelected && (
                         <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -217,7 +218,7 @@ export default function TaskList({ tasks: initialTasks, projectId }: Props) {
         </table>
       </div>
 
-      {/* Modale di conferma eliminazione */}
+      {/* Delete confirmation modal */}
       {confirmOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
@@ -234,31 +235,28 @@ export default function TaskList({ tasks: initialTasks, projectId }: Props) {
                 </svg>
               </div>
               <div>
-                    <h2 className="text-base font-semibold text-gray-900">Delete task</h2>
+                    <h2 className="text-base font-semibold text-gray-900">{t("deleteSelected")}</h2>
                     <p className="text-sm text-gray-500 mt-1">
-                      You are about to delete <span className="font-medium text-gray-800">{selected.size} task</span>
+                      {t("deleteWarning", { count: selected.size })}
                       {totalSubtasksToDelete > 0 && (
-                        <>
-                          {" "}and{" "}
-                          <span className="font-medium text-gray-800">{totalSubtasksToDelete} sub-tasks</span>
-                        </>
+                        <> {t("deleteWarningSubtasks", { subtasks: totalSubtasksToDelete })}</>
                       )}
-                      . This action is <span className="text-red-600 font-medium">irreversible</span>.
+                      . {t("irreversible")}
                     </p>
               </div>
             </div>
 
             {/* Elenco task selezionati */}
             <div className="rounded-lg border border-gray-100 bg-gray-50 divide-y divide-gray-100 max-h-48 overflow-y-auto mb-5">
-              {selectedTasks.map((t) => (
-                <div key={t.id} className="flex items-center justify-between px-3 py-2 gap-2">
-                  <span className="text-xs text-gray-700 truncate flex-1">{t.title}</span>
-                  {(t.subtasks?.length ?? 0) > 0 && (
+              {selectedTasks.map((taskItem) => (
+                <div key={taskItem.id} className="flex items-center justify-between px-3 py-2 gap-2">
+                  <span className="text-xs text-gray-700 truncate flex-1">{taskItem.title}</span>
+                  {(taskItem.subtasks?.length ?? 0) > 0 && (
                     <span className="text-[10px] text-gray-400 flex-shrink-0 flex items-center gap-0.5">
                       <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.3">
                         <path d="M2 4h8M4 7h6M6 10h4" strokeLinecap="round" />
                       </svg>
-                      +{t.subtasks!.length}
+                      +{taskItem.subtasks!.length}
                     </span>
                   )}
                 </div>
@@ -271,14 +269,14 @@ export default function TaskList({ tasks: initialTasks, projectId }: Props) {
                 disabled={deleting}
                 className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50"
               >
-                Annulla
+                {t("cancel")}
               </button>
               <button
                 onClick={handleDelete}
                 disabled={deleting}
                 className="px-4 py-2 text-sm rounded-lg bg-red-500 text-white font-medium hover:bg-red-600 disabled:opacity-50"
               >
-                {deleting ? "Eliminazione..." : `Elimina ${selected.size} task`}
+                {deleting ? t("deleting") : t("deleteCount", { count: selected.size })}
               </button>
             </div>
           </div>

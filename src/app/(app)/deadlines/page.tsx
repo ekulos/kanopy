@@ -5,6 +5,7 @@ import { cn, isDueLate, formatDueDate } from "@/lib/utils";
 import StatusBadge from "@/components/ui/StatusBadge";
 import PriorityBadge from "@/components/ui/PriorityBadge";
 import { isToday, isTomorrow, parseISO, isWithinInterval, addDays, startOfDay } from "date-fns";
+import { getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
@@ -26,18 +27,14 @@ function isDueLateDate(date: string | Date | null): boolean {
   return d < startOfDay(now);
 }
 
-const GROUP_LABELS: Record<string, string> = {
-  overdue: "Scaduti",
-  today: "Oggi",
-  tomorrow: "Domani",
-  week: "Questa settimana",
-  later: "Più avanti",
-};
+// group labels are provided via translations
 
 const GROUP_ORDER = ["overdue", "today", "tomorrow", "week", "later"];
 
 export default async function DeadlinesPage() {
   const session = await auth();
+  const t = await getTranslations("deadlines");
+  const tt = await getTranslations("tasks");
 
   const tasks = await prisma.task.findMany({
     where: {
@@ -70,12 +67,12 @@ export default async function DeadlinesPage() {
     <div className="flex flex-col h-full">
       {/* Topbar */}
       <div className="h-12 bg-white border-b border-gray-100 flex items-center px-5 flex-shrink-0">
-        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
           <svg className="w-4 h-4 text-accent" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
             <circle cx="8" cy="8" r="6" />
             <path d="M8 5v3.5l2 1.5" />
           </svg>
-          <span className="text-sm font-semibold text-gray-800">Scadenze</span>
+          <span className="text-sm font-semibold text-gray-800">{t("title")}</span>
         </div>
         <div className="ml-3 text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
           {totalCount}
@@ -90,7 +87,7 @@ export default async function DeadlinesPage() {
               <circle cx="16" cy="16" r="12" />
               <path d="M16 10v6.5l4 3" />
             </svg>
-            <p className="text-sm">Nessuna scadenza imminente.</p>
+            <p className="text-sm">{t("noUpcoming")}</p>
           </div>
         ) : (
           GROUP_ORDER.map((groupKey) => {
@@ -106,7 +103,7 @@ export default async function DeadlinesPage() {
                     groupKey === "today" ? "text-amber-600" :
                     "text-gray-400"
                   )}>
-                    {GROUP_LABELS[groupKey]}
+                    {t("groups." + groupKey)}
                   </span>
                   <span className="text-[11px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">
                     {groupTasks.length}
@@ -124,11 +121,11 @@ export default async function DeadlinesPage() {
                     </colgroup>
                     <thead>
                       <tr className="border-b border-gray-100">
-                        <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-4 py-2.5">Titolo</th>
-                        <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-4 py-2.5">Progetto</th>
-                        <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-4 py-2.5">Stato</th>
-                        <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-4 py-2.5">Priorità</th>
-                        <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-4 py-2.5">Scadenza</th>
+                        <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-4 py-2.5">{tt("headers.title")}</th>
+                        <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-4 py-2.5">{tt("headers.project")}</th>
+                        <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-4 py-2.5">{tt("headers.status")}</th>
+                        <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-4 py-2.5">{tt("headers.priority")}</th>
+                        <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider px-4 py-2.5">{tt("headers.due")}</th>
                       </tr>
                     </thead>
                     <tbody>

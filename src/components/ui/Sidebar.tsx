@@ -7,6 +7,7 @@ import type { Session } from "next-auth";
 import { cn } from "@/lib/utils";
 import { useSidebarProjects } from "@/hooks/useSidebarProjects";
 import Avatar from "@/components/ui/Avatar";
+import { useTranslations } from "next-intl";
 
 interface Props {
   user: Session["user"];
@@ -15,8 +16,13 @@ interface Props {
 export default function Sidebar({ user }: Props) {
   const pathname = usePathname();
   const { projects } = useSidebarProjects();
+  const tProjects = useTranslations("projects");
+  const tTasks = useTranslations("tasks");
+  const tDeadlines = useTranslations("deadlines");
+  const tTeams = useTranslations("teams");
+  const tCsv = useTranslations("csv");
 
-  // Estrae l'id del progetto corrente dal path
+  // Extract current project id from path
   const projectMatch = pathname.match(/\/projects\/([^\/]+)/);
   const currentProjectId = projectMatch?.[1];
   const currentProject = projects.find((p) => (p.code ?? p.id) === currentProjectId);
@@ -37,28 +43,28 @@ export default function Sidebar({ user }: Props) {
         </span>
       </div>
 
-      {/* Menu principale */}
+      {/* Main menu */}
       <nav className="px-2 pt-3 pb-1">
         <p className="text-[10px] font-medium text-white/30 tracking-widest uppercase px-2 pb-1.5">Menu</p>
         <NavItem href="/projects" active={pathname === "/projects"} icon={<GridIcon />}>
-          Projects
+          {tProjects("title")}
         </NavItem>
         <NavItem href="/my-tasks" active={pathname === "/my-tasks"} icon={<TaskIcon />}>
-          My tasks
+          {tTasks("title")}
         </NavItem>
         <NavItem href="/deadlines" active={pathname === "/deadlines"} icon={<ClockIcon />}>
-          Deadlines
+          {tDeadlines("title")}
         </NavItem>
         <NavItem href="/teams" active={pathname === "/teams"} icon={<UsersIcon />}>
-          Teams
+          {tTeams("title")}
         </NavItem>
       </nav>
 
       <div className="mx-3 my-1.5 h-px bg-white/[0.07]" />
 
-      {/* Progetti recenti */}
+      {/* Recent projects */}
       <nav className="px-2 pb-1 flex-1 overflow-y-auto">
-        <p className="text-[10px] font-medium text-white/30 tracking-widest uppercase px-2 pb-1.5 pt-2">Projects</p>
+        <p className="text-[10px] font-medium text-white/30 tracking-widest uppercase px-2 pb-1.5 pt-2">{tProjects("title")}</p>
         {projects.map((p) => (
           <NavItem
             key={p.id}
@@ -71,7 +77,7 @@ export default function Sidebar({ user }: Props) {
         ))}
       </nav>
 
-      {/* Sezione contestuale progetto */}
+      {/* Project context section */}
       {isInProject && currentProject && (
         <>
           <div className="mx-3 my-1 h-px bg-white/[0.07]" />
@@ -96,7 +102,7 @@ export default function Sidebar({ user }: Props) {
               icon={<CsvIcon />}
               ctx
             >
-              Import CSV
+              {tCsv("title")}
             </NavItem>
           </div>
         </>
@@ -105,15 +111,17 @@ export default function Sidebar({ user }: Props) {
       {/* User */}
       <div className="mt-auto border-t border-white/[0.07] p-2">
         <div className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-white/5 cursor-pointer group">
-          <Avatar user={{ name: user?.name, image: user?.image }} size="md" />
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-white/80 truncate">{user?.name}</p>
-            <p className="text-[11px] text-white/40 truncate">{user?.email}</p>
-          </div>
+          <Link href="/settings" className="flex items-center gap-2 flex-1 min-w-0">
+            <Avatar user={{ name: user?.name, image: user?.image }} size="md" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-white/80 truncate">{user?.name}</p>
+              <p className="text-[11px] text-white/40 truncate">{user?.email}</p>
+            </div>
+          </Link>
             <button
               onClick={() => signOut({ callbackUrl: "/login" })}
               className="opacity-0 group-hover:opacity-100 transition-opacity"
-              title="Sign out"
+              title={"Sign out"}
             >
             <svg className="w-4 h-4 text-white/40 hover:text-white/70" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
               <path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6" />
@@ -173,4 +181,13 @@ function CsvIcon() {
 }
 function UsersIcon() {
   return <svg className="w-[15px] h-[15px]" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.3"><circle cx="5.5" cy="4.5" r="2" /><path d="M1 12c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4" strokeLinecap="round" /><circle cx="11" cy="4" r="1.5" /><path d="M12.5 11.5c0-1.5-1-2.5-2.5-3" strokeLinecap="round" /></svg>;
+}
+
+function SettingsIcon() {
+  return (
+    <svg className="w-[15px] h-[15px]" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.3">
+      <circle cx="7.5" cy="7.5" r="2" />
+      <path d="M7.5 1v2M7.5 12v2M1 7.5h2M12 7.5h2M3 3l1.5 1.5M10.5 10.5L12 12M3 12l1.5-1.5M10.5 4.5L12 3" strokeLinecap="round" />
+    </svg>
+  );
 }

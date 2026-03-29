@@ -4,9 +4,11 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { cn, STATUS_LABELS, PRIORITY_LABELS, formatDueDate, isDueLate, getInitials } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import Avatar from "@/components/ui/Avatar";
 import ProgressBar from "@/components/ui/ProgressBar";
-import type { Task, TaskStatus, TaskPriority, User } from "@/types";
+import { formatDistanceToNow } from "date-fns";
+import type { Task, TaskStatus, TaskPriority, User, Activity } from "@/types";
 
 interface Props {
   task: Task;
@@ -15,6 +17,9 @@ interface Props {
 
 export default function TaskDetailPanel({ task, teamMembers }: Props) {
   const router = useRouter();
+  const t = useTranslations("task");
+  const tc = useTranslations("common");
+  const tl = useTranslations("labels");
   const [open, setOpen] = useState(true);
   const [status, setStatus] = useState<TaskStatus>(task.status);
   const [priority, setPriority] = useState<TaskPriority>(task.priority);
@@ -34,6 +39,31 @@ export default function TaskDetailPanel({ task, teamMembers }: Props) {
     return () => document.removeEventListener("mousedown", handler);
   }, [addPickerOpen]);
 
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [loadingActivities, setLoadingActivities] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      setLoadingActivities(true);
+      try {
+        const res = await fetch(`/api/tasks/${task.id}/activities`);
+        if (!res.ok) throw new Error();
+        const json = await res.json();
+        if (!mounted) return;
+        setActivities(json.data ?? []);
+      } catch (err) {
+        toast.error("Error loading activities");
+      } finally {
+        if (mounted) setLoadingActivities(false);
+      }
+    };
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, [task.id]);
+
   const patch = async (payload: object) => {
     try {
       const res = await fetch(`/api/tasks/${task.id}`, {
@@ -44,7 +74,7 @@ export default function TaskDetailPanel({ task, teamMembers }: Props) {
       if (!res.ok) throw new Error();
       router.refresh();
     } catch {
-      toast.error("Errore aggiornamento");
+      toast.error("Error updating");
     }
   };
 
@@ -84,13 +114,40 @@ export default function TaskDetailPanel({ task, teamMembers }: Props) {
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
   const isLate = isDueLate(dueDate);
 
+  function renderActivityText(a: Activity) {
+    try {
+      const actor = a.user?.name ? `${a.user.name} — ` : "";
+      const payload = a.payload ? JSON.parse(a.payload) : null;
+      switch (a.type) {
+        case "task_created":
+          return `${actor}${t("activity.taskCreated")}`;
+        case "status_changed": {
+          const to = payload?.to as keyof typeof STATUS_LABELS | undefined;
+          const statusLabel = to ? tl(`status.${to}`) : String(payload?.to ?? "");
+          return `${actor}${t("activity.statusChanged", { status: statusLabel })}`;
+        }
+        case "assignee_added": {
+          const assigneeId = payload?.userId;
+          const name = payload?.userName ?? assigneeId ?? "assignee";
+          return `${actor}${t("activity.assigneeAdded", { name })}`;
+        }
+        case "comment_added":
+          return `${actor}${t("activity.commentAdded")}`;
+        default:
+          return `${actor}${a.type.replaceAll("_", " ")}`;
+      }
+    } catch (e) {
+      return a.type;
+    }
+  }
+
   return (
     <div className="flex flex-shrink-0">
       {/* Toggle strip */}
       <button
         onClick={() => setOpen((o) => !o)}
         className="w-5 border-l border-gray-100 bg-white hover:bg-gray-50 flex items-center justify-center transition-colors"
-        title={open ? "Chiudi pannello" : "Apri pannello"}
+        title={open ? t("closePanel") : t("openPanel")}
       >
         <svg
           className={cn("w-3.5 h-3.5 text-gray-400 transition-transform", !open && "rotate-180")}
@@ -109,8 +166,8 @@ export default function TaskDetailPanel({ task, teamMembers }: Props) {
       >
         <div className="w-56 px-4 py-5 space-y-5">
 
-          {/* Stato */}
-          <Section label="Stato">
+          {/* Status */}
+          <Section label={t("sections.status")}>
             <div className="flex flex-wrap gap-1.5">
               {(["todo", "in_progress", "done"] as TaskStatus[]).map((s) => (
                 <button
@@ -125,14 +182,14 @@ export default function TaskDetailPanel({ task, teamMembers }: Props) {
                       : "bg-transparent border-gray-200 text-gray-500 hover:border-gray-300"
                   )}
                 >
-                  {STATUS_LABELS[s]}
+                  {tl(`status.${s}`)}
                 </button>
               ))}
             </div>
           </Section>
 
-          {/* Priorità */}
-          <Section label="Priorità">
+          {/* Priority */}
+          <Section label={t("sections.priority")}>
             <div className="flex gap-1.5">
               {(["high", "medium", "low"] as TaskPriority[]).map((p) => (
                 <button
@@ -147,14 +204,14 @@ export default function TaskDetailPanel({ task, teamMembers }: Props) {
                       : "bg-transparent border-gray-200 text-gray-500 hover:border-gray-300"
                   )}
                 >
-                  {PRIORITY_LABELS[p]}
+                  {tl(`priority.${p}`)}
                 </button>
               ))}
             </div>
           </Section>
 
-          {/* Assegnatari */}
-          <Section label="Assegnatari">
+          {/* Assignees */}
+          <Section label={t("sections.assignees")}>
             <div className="space-y-1.5">
               {assignees.map((a) => (
                 <div key={a.id} className="flex items-center gap-2 group">
@@ -170,7 +227,7 @@ export default function TaskDetailPanel({ task, teamMembers }: Props) {
                   </button>
                 </div>
               ))}
-              {/* Aggiungi */}
+              {/* Add */}
               {teamMembers.filter((m) => !assignees.some((a) => a.userId === m.id)).length > 0 && (
                 <div className="relative" ref={pickerRef}>
                   <button
@@ -180,7 +237,7 @@ export default function TaskDetailPanel({ task, teamMembers }: Props) {
                     <svg className="w-3.5 h-3.5" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                       <path d="M7 1v12M1 7h12" />
                     </svg>
-                    Aggiungi membro
+                    {t("sections.addMember")}
                   </button>
                   {addPickerOpen && (
                     <div className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-md py-1 z-10 min-w-[160px]">
@@ -203,8 +260,8 @@ export default function TaskDetailPanel({ task, teamMembers }: Props) {
             </div>
           </Section>
 
-          {/* Scadenza */}
-          <Section label="Scadenza">
+          {/* Due */}
+          <Section label={t("sections.due")}>
             <div className="flex flex-col gap-1.5">
               <input
                 type="date"
@@ -216,22 +273,22 @@ export default function TaskDetailPanel({ task, teamMembers }: Props) {
                 )}
               />
               {isLate && dueDate && (
-                <span className="text-[10px] bg-red-50 text-red-600 px-1.5 py-0.5 rounded-full font-medium w-fit">scaduto</span>
+                <span className="text-[10px] bg-red-50 text-red-600 px-1.5 py-0.5 rounded-full font-medium w-fit">{t("overdue")}</span>
               )}
               {dueDate && (
                 <button
                   onClick={() => handleDueDate("")}
                   className="text-[11px] text-gray-400 hover:text-red-400 text-left transition-colors"
                 >
-                  Rimuovi scadenza
+                  {t("removeDueDate")}
                 </button>
               )}
             </div>
           </Section>
 
-          {/* Avanzamento sotto-task */}
+          {/* Subtask progress */}
           {total > 0 && (
-            <Section label="Avanzamento sotto-task">
+            <Section label={t("sections.subtaskProgress")}>
               <div className="flex items-center gap-2">
                 <ProgressBar done={done} total={total} className="flex-1" height="sm" />
                 <span className="text-xs text-gray-400 flex-shrink-0">{done}/{total}</span>
@@ -239,26 +296,54 @@ export default function TaskDetailPanel({ task, teamMembers }: Props) {
             </Section>
           )}
 
-          {/* Attività */}
-          <Section label="Attività recente">
+          {/* Recent activity */}
+          <Section label={t("sections.recentActivity")}>
             <div className="space-y-2">
-              {[
-                { text: "Task creato", time: "5 gg fa" },
-                { text: "Stato → In corso", time: "2 gg fa" },
-                { text: "Commento aggiunto", time: "ieri" },
-              ].map((a, i) => (
-                <div key={i} className="flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-gray-300 mt-1.5 flex-shrink-0" />
-                  <p className="text-xs text-gray-500 flex-1">{a.text}</p>
-                  <span className="text-[11px] text-gray-300 flex-shrink-0">{a.time}</span>
-                </div>
-              ))}
+              {loadingActivities ? (
+                <div className="text-sm text-gray-300">{tc("loading")}</div>
+              ) : activities.length === 0 ? (
+                <div className="text-sm text-gray-300">{tc("noRecentActivity")}</div>
+              ) : (
+                activities.map((a) => (
+                  <div key={a.id} className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-gray-300 mt-1.5 flex-shrink-0" />
+                    <p className="text-xs text-gray-500 flex-1">{renderActivityText(a)}</p>
+                    <span className="text-[11px] text-gray-300 flex-shrink-0">{formatDistanceToNow(new Date(a.createdAt), { addSuffix: true })}</span>
+                  </div>
+                ))
+              )}
             </div>
           </Section>
         </div>
       </div>
     </div>
   );
+}
+
+function renderActivityText(a: Activity) {
+  try {
+    const actor = a.user?.name ? `${a.user.name} — ` : "";
+    const payload = a.payload ? JSON.parse(a.payload) : null;
+    switch (a.type) {
+      case "task_created":
+        return `${actor}Task created`;
+      case "status_changed": {
+        const to = payload?.to as keyof typeof STATUS_LABELS | undefined;
+        return `${actor}Status → ${to ? STATUS_LABELS[to] : String(payload?.to ?? "")}`;
+      }
+      case "assignee_added": {
+        const assigneeId = payload?.userId;
+        const name = payload?.userName ?? assigneeId ?? "assignee";
+        return `${actor}Assignee added: ${name}`;
+      }
+      case "comment_added":
+        return `${actor}Comment added`;
+      default:
+        return `${actor}${a.type.replaceAll("_", " ")}`;
+    }
+  } catch (e) {
+    return a.type;
+  }
 }
 
 function Section({ label, children }: { label: string; children: React.ReactNode }) {

@@ -1,3 +1,6 @@
+"use client";
+
+import { useTranslations } from "next-intl";
 import { PRIORITY_LABELS } from "@/lib/utils";
 
 const PRIORITY_STYLES: Record<string, string> = {
@@ -11,9 +14,18 @@ interface Props {
 }
 
 export default function PriorityBadge({ priority }: Props) {
+  const t = useTranslations("labels");
+  let label = PRIORITY_LABELS[priority as keyof typeof PRIORITY_LABELS] ?? priority;
+  try {
+    const translated = t(`priority.${priority}`);
+    if (translated && typeof translated === "string") label = translated;
+  } catch (e) {
+    // fallback
+  }
+
   return (
     <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${PRIORITY_STYLES[priority] ?? "bg-gray-100 text-gray-500"}`}>
-      {PRIORITY_LABELS[priority as keyof typeof PRIORITY_LABELS] ?? priority}
+      {label}
     </span>
   );
 }

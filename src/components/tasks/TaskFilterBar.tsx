@@ -1,18 +1,19 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import type { TaskStatus, TaskPriority, TaskFilter } from "@/types";
 
 const STATUSES: { value: TaskStatus; label: string }[] = [
-  { value: "todo", label: "Da fare" },
-  { value: "in_progress", label: "In corso" },
-  { value: "done", label: "Fatto" },
+  { value: "todo", label: "To do" },
+  { value: "in_progress", label: "In progress" },
+  { value: "done", label: "Done" },
 ];
 
 const PRIORITIES: { value: TaskPriority; label: string }[] = [
-  { value: "high", label: "Alta" },
-  { value: "medium", label: "Media" },
-  { value: "low", label: "Bassa" },
+  { value: "high", label: "High" },
+  { value: "medium", label: "Medium" },
+  { value: "low", label: "Low" },
 ];
 
 interface Props {
@@ -23,6 +24,8 @@ interface Props {
 }
 
 export default function TaskFilterBar({ filter, onChange, totalCount, filteredCount }: Props) {
+  const t = useTranslations("tasks");
+  const tl = useTranslations("labels");
   const hasFilter = filter.query !== "" || filter.statuses.length > 0 || filter.priorities.length > 0;
 
   const toggleStatus = (s: TaskStatus) => {
@@ -52,10 +55,10 @@ export default function TaskFilterBar({ filter, onChange, totalCount, filteredCo
           <circle cx="6" cy="6" r="4.5" />
           <path d="M9.5 9.5L13 13" strokeLinecap="round" />
         </svg>
-        <input
+          <input
           value={filter.query}
           onChange={(e) => onChange({ ...filter, query: e.target.value })}
-          placeholder="Cerca task..."
+          placeholder={t("searchPlaceholder")}
           className="text-xs text-gray-700 bg-transparent outline-none flex-1 placeholder:text-gray-400 min-w-0"
         />
         {filter.query && (
@@ -74,8 +77,8 @@ export default function TaskFilterBar({ filter, onChange, totalCount, filteredCo
 
       {/* Status filter */}
       <div className="flex items-center gap-1">
-        <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wide mr-0.5">Stato</span>
-        {STATUSES.map(({ value, label }) => {
+        <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wide mr-0.5">{t("headers.status")}</span>
+        {STATUSES.map(({ value }) => {
           const active = filter.statuses.includes(value);
           return (
             <button
@@ -91,8 +94,8 @@ export default function TaskFilterBar({ filter, onChange, totalCount, filteredCo
                     : "bg-blue-50 border-blue-300 text-blue-800"
                   : "bg-white border-gray-200 text-gray-500 hover:border-gray-300"
               )}
-            >
-              {label}
+              >
+              {tl(`status.${value}`)}
             </button>
           );
         })}
@@ -102,8 +105,8 @@ export default function TaskFilterBar({ filter, onChange, totalCount, filteredCo
 
       {/* Priority filter */}
       <div className="flex items-center gap-1">
-        <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wide mr-0.5">Priorità</span>
-        {PRIORITIES.map(({ value, label }) => {
+        <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wide mr-0.5">{t("headers.priority")}</span>
+        {PRIORITIES.map(({ value }) => {
           const active = filter.priorities.includes(value);
           return (
             <button
@@ -119,8 +122,8 @@ export default function TaskFilterBar({ filter, onChange, totalCount, filteredCo
                     : "bg-blue-50 border-blue-300 text-blue-800"
                   : "bg-white border-gray-200 text-gray-500 hover:border-gray-300"
               )}
-            >
-              {label}
+              >
+              {tl(`priority.${value}`)}
             </button>
           );
         })}
@@ -130,10 +133,10 @@ export default function TaskFilterBar({ filter, onChange, totalCount, filteredCo
         <>
           <div className="h-4 w-px bg-gray-200" />
           <span className="text-xs text-gray-400">
-            {filteredCount} di {totalCount}
+            {filteredCount} of {totalCount}
           </span>
           <button onClick={clear} className="text-xs text-accent hover:underline">
-            Pulisci
+            {t("clear")}
           </button>
         </>
       )}

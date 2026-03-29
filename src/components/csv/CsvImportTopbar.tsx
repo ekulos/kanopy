@@ -1,10 +1,16 @@
+"use client";
+
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 interface Props {
   project: { id: string; code: string | null; name: string; color: string };
 }
 
 export default function CsvImportTopbar({ project }: Props) {
+  const tProjects = useTranslations("projects");
+  const tCsv = useTranslations("csv");
+
   return (
     <div className="h-12 bg-white border-b border-gray-100 flex items-center px-4 gap-2 flex-shrink-0">
       <Link
@@ -14,7 +20,7 @@ export default function CsvImportTopbar({ project }: Props) {
         <svg className="w-3.5 h-3.5" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
           <path d="M9 2L4 7l5 5" />
         </svg>
-        Progetti
+        {tProjects("title")}
       </Link>
       <span className="text-gray-300 text-xs">/</span>
       <Link
@@ -25,7 +31,7 @@ export default function CsvImportTopbar({ project }: Props) {
         {project.name}
       </Link>
       <span className="text-gray-300 text-xs">/</span>
-      <span className="text-sm font-medium text-gray-800">Import CSV</span>
+      <span className="text-sm font-medium text-gray-800">{tCsv("title")}</span>
     </div>
   );
 }
