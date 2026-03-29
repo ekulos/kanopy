@@ -1,6 +1,6 @@
 {
   "name": "kanopy",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "private": true,
   "scripts": {
     "dev": "prisma generate --schema=prisma/schema.sqlite.prisma && next dev",
