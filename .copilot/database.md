@@ -173,15 +173,22 @@ const task = await prisma.task.findFirst({
 
 ## Migrations
 
+Kanopy usa **due schema Prisma** separati:
+
+| File | Provider | Usato da |
+|---|---|---|
+| `prisma/schema.sqlite.prisma` | SQLite | Dev locale (default) |
+| `prisma/schema.prisma` | PostgreSQL | Docker / produzione |
+
 ```bash
-# Development: push schema without migration files
-npm run db:push
+# Development (SQLite — default)
+npm run db:push        # sincronizza schema con dev.db
+npm run db:generate    # rigenera il client Prisma
+npm run db:studio      # apre Prisma Studio
 
-# Production: create and apply migrations
-npm run db:migrate
-
-# After schema changes: regenerate client
-npm run db:generate
+# PostgreSQL (Docker/prod)
+npx prisma db push --schema=prisma/schema.prisma
+npx prisma generate   # usa schema.prisma (postgresql) di default
 ```
 
 ---
@@ -198,9 +205,11 @@ model Task {
 
 2. Run:
 ```bash
-npm run db:push         # or db:migrate in production
-npx prisma generate     # regenerate the client — REQUIRED after schema changes
+npm run db:push         # sincronizza con SQLite (dev)
+npm run db:generate     # rigenera il client — OBBLIGATORIO dopo modifiche allo schema
 ```
+
+> Ricorda di aggiornare **entrambi** gli schema: `schema.sqlite.prisma` e `schema.prisma`.
 
 3. Update `src/types/index.ts` — the `Task` interface
 
@@ -238,7 +247,7 @@ DELETE FROM "Project";
 The project uses SQLite for development (`DATABASE_URL="file:./dev.db"`).
 
 To switch to PostgreSQL in production:
-1. Update `DATABASE_PROVIDER` in the production environment
+1. Change `provider = "postgresql"` in `schema.prisma`
 2. Update `DATABASE_URL` in the production environment
 3. Run `npm run db:migrate` in production
 

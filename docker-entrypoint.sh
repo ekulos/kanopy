@@ -1,8 +1,8 @@
 #!/bin/sh
 set -e
 
-echo "→ Running Prisma migrations..."
-node node_modules/prisma/build/index.js migrate deploy
+echo "→ Pushing Prisma schema to database..."
+node node_modules/prisma/build/index.js db push --skip-generate
 
 echo "→ Starting server..."
 exec node server.js

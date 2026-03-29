@@ -241,7 +241,6 @@ npm run build        # Build produzione
 Copiare `.env.example` → `.env.local` e compilare:
 
 ```
-DATABASE_PROVIDER=
 DATABASE_URL=
 NEXTAUTH_URL=
 NEXTAUTH_SECRET=
