@@ -11,6 +11,14 @@ RUN npm ci
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+
+# Variabili placeholder necessarie solo durante la build di Next.js
+# I valori reali vengono iniettati a runtime dal docker-compose
+ENV NEXTAUTH_URL=http://localhost:3000
+ENV NEXTAUTH_SECRET=build_placeholder
+ENV AUTH_SECRET=build_placeholder
+ENV DATABASE_URL=file:./dev.db
+
 RUN npx prisma generate
 RUN npm run build
 
