@@ -1,0 +1,184 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  role          String    @default("member") // admin | member
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  taskAssignees TaskAssignee[]
+  comments      Comment[]
+  teamMembers   TeamMember[]
+  ownedProjects Project[]     @relation("ProjectOwner")
+  activities    Activity[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Team {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  color       String   @default("#7c5cbf")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members  TeamMember[]
+  projects Project[]
+}
+
+model TeamMember {
+  id       String   @id @default(cuid())
+  teamId   String
+  userId   String
+  role     String   @default("member") // owner | admin | member
+  joinedAt DateTime @default(now())
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  code        String?  @unique // Es. SKARA, WEB, APP
+  name        String
+  description String?
+  color       String   @default("#378add")
+  status      String   @default("active") // active | on_hold | completed | archived
+  ownerId     String
+  teamId      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner      User       @relation("ProjectOwner", fields: [ownerId], references: [id])
+  team       Team?      @relation(fields: [teamId], references: [id])
+  tasks      Task[]
+  activities Activity[]
+}
+
+model Task {
+  id           String    @id @default(cuid())
+  ticketNumber Int       @default(0)
+  title        String
+  description  String?
+  status      String    @default("todo") // todo | in_progress | done
+  priority    String    @default("medium") // low | medium | high
+  dueDate     DateTime?
+  position    Int       @default(0)
+  projectId   String
+  parentId    String?   // per i sotto-task
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  project    Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  parent     Task?         @relation("SubTasks", fields: [parentId], references: [id])
+  subtasks   Task[]        @relation("SubTasks")
+  assignees  TaskAssignee[]
+  comments   Comment[]
+  activities Activity[]
+  labels     TaskLabel[]
+}
+
+model TaskAssignee {
+  id         String   @id @default(cuid())
+  taskId     String
+  userId     String
+  assignedAt DateTime @default(now())
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, userId])
+}
+
+model Label {
+  id    String @id @default(cuid())
+  name  String
+  color String @default("#7c5cbf")
+
+  tasks TaskLabel[]
+}
+
+model TaskLabel {
+  taskId  String
+  labelId String
+
+  task  Task  @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  label Label @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  @@id([taskId, labelId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  taskId    String
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id])
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  type      String   // task_created | status_changed | assignee_added | comment_added | ...
+  payload   String?  // JSON string con dettagli
+  taskId    String?
+  projectId String?
+  userId    String
+  createdAt DateTime @default(now())
+
+  task    Task?    @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  user    User     @relation(fields: [userId], references: [id])
+}
