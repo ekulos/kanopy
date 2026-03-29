@@ -11,4 +11,8 @@ export const authConfig = {
   pages: {
     signIn: "/login",
   },
+  // When deployed behind a proxy or using custom hostnames, enable trustHost
+  trustHost: true,
+  // Ensure a secret is provided (fall back to AUTH_SECRET if NEXTAUTH_SECRET isn't set)
+  secret: process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET,
 } satisfies NextAuthConfig;
