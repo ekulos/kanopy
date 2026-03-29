@@ -7,14 +7,15 @@ import CsvImportPanel from "@/components/csv/CsvImportPanel";
 export const dynamic = "force-dynamic";
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function CsvImportPage({ params }: Props) {
   const session = await auth();
+  const { id } = await params;
 
   const project = await prisma.project.findFirst({
-    where: { OR: [{ code: params.id }, { id: params.id }], ownerId: session!.user!.id! },
+    where: { OR: [{ code: id }, { id }], ownerId: session!.user!.id! },
     select: { id: true, code: true, name: true, color: true },
   });
 

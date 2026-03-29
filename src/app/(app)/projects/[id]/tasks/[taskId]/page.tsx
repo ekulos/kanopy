@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import TaskDetailTopbar from "@/components/tasks/TaskDetailTopbar";
 import TaskDetailMain from "@/components/tasks/TaskDetailMain";
 import TaskDetailPanel from "@/components/tasks/TaskDetailPanel";
+import type { Task, User } from "@/types";
 
 export const dynamic = "force-dynamic";
 
@@ -58,10 +59,10 @@ export default async function TaskDetailPage({ params }: Props) {
 
   return (
     <div className="flex flex-col h-full">
-      <TaskDetailTopbar task={task} />
+      <TaskDetailTopbar task={task as unknown as Task} />
       <div className="flex flex-1 overflow-hidden">
-        <TaskDetailMain task={task} currentUserId={session!.user!.id!} />
-        <TaskDetailPanel task={task} teamMembers={teamMembers} />
+        <TaskDetailMain task={task as unknown as Task} currentUserId={session!.user!.id!} />
+        <TaskDetailPanel task={task as unknown as Task} teamMembers={teamMembers as unknown as User[]} />
       </div>
     </div>
   );
