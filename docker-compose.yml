@@ -25,13 +25,13 @@ services:
     environment:
       NODE_ENV: production
       DATABASE_URL: postgresql://kanopy:${POSTGRES_PASSWORD:-kanopy_secret}@db:5432/kanopy
-      NEXTAUTH_URL: http://localhost:3000
-      NEXTAUTH_SECRET: change_me
-      AUTH_SECRET: change_me
-      GITHUB_CLIENT_ID: ""
-      GITHUB_CLIENT_SECRET: ""
-      GOOGLE_CLIENT_ID: ""
-      GOOGLE_CLIENT_SECRET: ""
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:${PORT:-3000}}
+      NEXTAUTH_SECRET: ${AUTH_SECRET:-change_me}
+      AUTH_SECRET: ${AUTH_SECRET:-change_me}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
 
 volumes:
   postgres_data:
