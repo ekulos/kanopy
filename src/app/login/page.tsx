@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { signIn } from "@/lib/auth";
+import Image from "next/image";
 
 export default async function LoginPage() {
   const session = await auth();
@@ -9,13 +10,8 @@ export default async function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="bg-white border border-gray-200 rounded-2xl p-10 w-full max-w-sm shadow-sm">
-        <div className="flex items-center gap-3 mb-8">
-          <div className="w-9 h-9 rounded-lg bg-accent flex items-center justify-center text-white font-semibold text-sm">
-            K
-          </div>
-          <span className="text-lg font-semibold">
-            Kan<span className="text-accent">opy</span>
-          </span>
+        <div className="flex items-center justify-center mb-8">
+          <Image src="/kanopy.svg" alt="Kanopy" width={200} height={300} />
         </div>
 
         <h1 className="text-xl font-semibold mb-1">Welcome</h1>
