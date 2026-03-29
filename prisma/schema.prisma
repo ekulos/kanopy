@@ -3,6 +3,18 @@ generator client {
   binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
+enum Status {
+  todo
+  in_progress
+  done
+}
+
+enum Priority {
+  low
+  medium
+  high
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -110,8 +122,8 @@ model Task {
   ticketNumber Int       @default(0)
   title        String
   description  String?
-  status      String    @default("todo") // todo | in_progress | done
-  priority    String    @default("medium") // low | medium | high
+  status      Status    @default(todo)
+  priority    Priority  @default(medium)
   dueDate     DateTime?
   position    Int       @default(0)
   projectId   String

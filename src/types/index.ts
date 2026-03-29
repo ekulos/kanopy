@@ -163,13 +163,13 @@ export interface CreateCommentPayload {
 // ─── CSV Import ───────────────────────────────────────────────────────────────
 
 export interface CsvTaskRow {
-  titolo: string;
-  descrizione?: string;
-  stato?: string;
-  priorità?: string;
-  scadenza?: string;
-  assegnatari?: string;
-  task_padre?: string;
+  title: string;
+  description?: string;
+  status?: string;
+  priority?: string;
+  due_date?: string;
+  assignees?: string;
+  main_task?: string;
 }
 
 export interface CsvImportResult {

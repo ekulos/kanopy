@@ -9,13 +9,13 @@ const importSchema = z.object({
   projectId: z.string(),
   rows: z.array(
     z.object({
-      titolo: z.string(),
-      descrizione: z.string().optional(),
-      stato: z.string().optional(),
-      priorità: z.string().optional(),
-      scadenza: z.string().optional(),
-      assegnatari: z.string().optional(),
-      task_padre: z.string().optional(),
+      title: z.string(),
+      description: z.string().optional(),
+      status: z.string().optional(),
+      priority: z.string().optional(),
+      due_date: z.string().optional(),
+      assignees: z.string().optional(),
+      main_task: z.string().optional(),
     })
   ),
 });
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     const rowNum = i + 1;
 
     // Validazione
-    if (!row.titolo?.trim()) {
+    if (!row.title?.trim()) {
       result.errors.push({ row: rowNum, message: "Title is required" });
       result.skipped++;
       continue;
@@ -51,10 +51,10 @@ export async function POST(req: NextRequest) {
 
     // Parse data
     let dueDate: Date | null = null;
-    if (row.scadenza?.trim()) {
-      const d = new Date(row.scadenza.trim());
+    if (row.due_date?.trim()) {
+      const d = new Date(row.due_date.trim());
       if (isNaN(d.getTime())) {
-        result.errors.push({ row: rowNum, message: `Invalid date: ${row.scadenza}` });
+        result.errors.push({ row: rowNum, message: `Invalid date: ${row.due_date}` });
         result.skipped++;
         continue;
       }
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Risolvi assegnatari per email
-    const assigneeEmails = (row.assegnatari ?? "")
+    const assigneeEmails = (row.assignees ?? "")
       .split(",")
       .map((e) => e.trim().toLowerCase())
       .filter(Boolean);
@@ -78,13 +78,13 @@ export async function POST(req: NextRequest) {
 
     // Risolvi task padre per sotto-task
     let parentId: string | null = null;
-    if (row.task_padre?.trim()) {
+    if (row.main_task?.trim()) {
       const parentTask = await prisma.task.findFirst({
-        where: { projectId, title: row.task_padre.trim(), parentId: null },
+        where: { projectId, title: row.main_task.trim(), parentId: null },
         select: { id: true },
       });
       if (!parentTask) {
-        result.errors.push({ row: rowNum, message: `Parent task not found: "${row.task_padre.trim()}"` });
+        result.errors.push({ row: rowNum, message: `Parent task not found: "${row.main_task.trim()}"` });
         result.skipped++;
         continue;
       }
@@ -93,17 +93,17 @@ export async function POST(req: NextRequest) {
 
     // Calcola posizione
     const lastTask = await prisma.task.findFirst({
-      where: { projectId, status: normalizeCsvStatus(row.stato), parentId },
+      where: { projectId, status: normalizeCsvStatus(row.status), parentId },
       orderBy: { position: "desc" },
     });
 
     try {
       await prisma.task.create({
         data: {
-          title: row.titolo.trim(),
-          description: row.descrizione?.trim() || null,
-          status: normalizeCsvStatus(row.stato),
-          priority: normalizeCsvPriority(row.priorità),
+          title: row.title.trim(),
+          description: row.description?.trim() || null,
+          status: normalizeCsvStatus(row.status),
+          priority: normalizeCsvPriority(row.priority),
           dueDate,
           projectId,
           parentId,

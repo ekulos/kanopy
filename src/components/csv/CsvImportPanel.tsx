@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Papa from "papaparse";
 import toast from "react-hot-toast";
-import { cn } from "@/lib/utils";
+import { cn, parseCsvStatus, normalizeCsvStatus, parseCsvPriority, normalizeCsvPriority } from "@/lib/utils";
 import type { CsvTaskRow } from "@/types";
 
 interface Props {
@@ -14,9 +14,6 @@ interface Props {
 
 type RowState = CsvTaskRow & { _errors: string[]; _valid: boolean };
 
-const VALID_STATI = ["da_fare", "in_corso", "fatto", "todo", "in_progress", "done", "da fare", "in corso", ""];
-const VALID_PRIORITA = ["alta", "media", "bassa", "high", "medium", "low", ""];
-
 export default function CsvImportPanel({ projectId, projectName }: Props) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -25,21 +22,30 @@ export default function CsvImportPanel({ projectId, projectName }: Props) {
   const [done, setDone] = useState<{ imported: number } | null>(null);
   const [dragging, setDragging] = useState(false);
 
+  function toSnakeCase(h: string) {
+    return h
+      .trim()
+      .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
+      .replace(/[\s\-]+/g, "_")
+      .replace(/[^a-z0-9_]/gi, "_")
+      .toLowerCase();
+  }
+
   const parseFile = (file: File) => {
     Papa.parse<CsvTaskRow>(file, {
       header: true,
       skipEmptyLines: true,
-      transformHeader: (h) => h.trim().toLowerCase(),
+      transformHeader: (h) => toSnakeCase(h),
       complete: (res) => {
         const parsed: RowState[] = res.data.map((row) => {
           const errors: string[] = [];
-          if (!row.titolo?.trim()) errors.push("Titolo obbligatorio");
-          if (row.stato && !VALID_STATI.includes(row.stato.toLowerCase().trim()))
-            errors.push(`Stato non valido: "${row.stato}"`);
-          if (row.priorità && !VALID_PRIORITA.includes(row.priorità.toLowerCase().trim()))
-            errors.push(`Priorità non valida: "${row.priorità}"`);
-          if (row.scadenza?.trim() && isNaN(new Date(row.scadenza.trim()).getTime()))
-            errors.push(`Data non valida: "${row.scadenza}"`);
+          if (!row.title?.trim()) errors.push("Title is required");
+          if (row.status && !parseCsvStatus(row.status))
+            errors.push(`Invalid status: "${row.status}"`);
+          if (row.priority && !parseCsvPriority(row.priority))
+            errors.push(`Invalid priority: "${row.priority}"`);
+          if (row.due_date?.trim() && isNaN(new Date(row.due_date.trim()).getTime()))
+            errors.push(`Invalid date: "${row.due_date}"`);
           return { ...row, _errors: errors, _valid: errors.length === 0 };
         });
         setRows(parsed);
@@ -64,7 +70,15 @@ export default function CsvImportPanel({ projectId, projectName }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           projectId,
-          rows: valid.map(({ _errors, _valid, ...r }) => r),
+          rows: valid.map(({ _errors, _valid, ...r }) => ({
+            title: (r as any).title?.trim(),
+            description: (r as any).description?.trim() || null,
+            status: normalizeCsvStatus((r as any).status),
+            priority: normalizeCsvPriority((r as any).priority),
+            due_date: (r as any).due_date?.trim() || null,
+            assignees: (r as any).assignees || null,
+            main_task: (r as any).main_task || null,
+          })),
         }),
       });
       const data = await res.json();
@@ -137,13 +151,13 @@ export default function CsvImportPanel({ projectId, projectName }: Props) {
         <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Supported columns</p>
         <div className="space-y-2">
           {[
-            { col: "titolo", req: true, desc: "Task name" },
-            { col: "descrizione", req: false, desc: "Additional details" },
-            { col: "stato", req: false, desc: "da_fare · in_corso · fatto" },
-            { col: "priorità", req: false, desc: "alta · media · bassa" },
-            { col: "scadenza", req: false, desc: "Format YYYY-MM-DD" },
-            { col: "assegnatari", req: false, desc: "Comma separated emails" },
-            { col: "task_padre", req: false, desc: "Parent task title (creates sub-task)" },
+            { col: "title", req: true, desc: "Task name" },
+            { col: "description", req: false, desc: "Additional details" },
+            { col: "status", req: false, desc: "todo · in_progress · done" },
+            { col: "priority", req: false, desc: "high · medium · low" },
+            { col: "due_date", req: false, desc: "Format YYYY-MM-DD" },
+            { col: "assignees", req: false, desc: "Comma separated emails" },
+            { col: "main_task", req: false, desc: "Parent task title (creates sub-task)" },
           ].map((r) => (
             <div key={r.col} className="flex items-center gap-2.5 text-xs">
               <code className="bg-gray-100 px-2 py-0.5 rounded font-mono text-gray-700">{r.col}</code>
@@ -163,43 +177,31 @@ export default function CsvImportPanel({ projectId, projectName }: Props) {
               <span className="text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium">{valid} valid</span>
               {invalid > 0 && <span className="text-xs bg-red-50 text-red-700 px-2 py-0.5 rounded-full font-medium">{invalid} errors</span>}
             </div>
-            <button onClick={() => setRows([])} className="text-xs text-gray-400 hover:text-gray-600">
-              Change file
-            </button>
+            <button onClick={() => setRows([])} className="text-xs text-gray-400 hover:text-gray-600">Change file</button>
           </div>
 
           <div className="overflow-x-auto max-h-80">
             <table className="w-full text-xs">
               <thead className="bg-gray-50 sticky top-0">
                 <tr>
-                  {["titolo", "descrizione", "task_padre", "stato", "priorità", "scadenza", "assegnatari", "esito"].map((h) => (
+                  { ["title", "description", "main_task", "status", "priority", "due_date", "assignees", "result"].map((h) => (
                     <th key={h} className="text-left px-4 py-2.5 font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                       {h}
                     </th>
-                  ))}
+                  )) }
                 </tr>
               </thead>
               <tbody>
                 {rows.map((row, i) => (
                   <tr key={i} className={cn("border-t border-gray-50", !row._valid && "bg-red-50/50")}>
-                    <td className="px-4 py-2.5 font-medium text-gray-800 max-w-[160px] truncate">
-                      {row.titolo || <span className="italic text-red-400">—</span>}
-                    </td>
-                    <td className="px-4 py-2.5 text-gray-500 max-w-[160px] truncate">{row.descrizione || "—"}</td>
-                    <td className="px-4 py-2.5 text-gray-500 max-w-[120px] truncate">{row.task_padre || "—"}</td>
-                    <td className="px-4 py-2.5 text-gray-500">{row.stato || "—"}</td>
-                    <td className="px-4 py-2.5 text-gray-500">{row.priorità || "—"}</td>
-                    <td className="px-4 py-2.5 text-gray-500">{row.scadenza || "—"}</td>
-                    <td className="px-4 py-2.5 text-gray-500 max-w-[120px] truncate">{row.assegnatari || "—"}</td>
-                    <td className="px-4 py-2.5">
-                      {row._valid ? (
-                        <span className="bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-medium">ok</span>
-                      ) : (
-                        <span className="bg-red-100 text-red-700 px-1.5 py-0.5 rounded font-medium" title={row._errors.join(", ")}>
-                          errore
-                        </span>
-                      )}
-                    </td>
+                    <td className="px-4 py-2.5 font-medium text-gray-800 max-w-[160px] truncate">{row.title || <span className="italic text-red-400">—</span>}</td>
+                    <td className="px-4 py-2.5 text-gray-500 max-w-[160px] truncate">{row.description || "—"}</td>
+                    <td className="px-4 py-2.5 text-gray-500 max-w-[120px] truncate">{row.main_task || "—"}</td>
+                    <td className="px-4 py-2.5 text-gray-500">{row.status || "—"}</td>
+                    <td className="px-4 py-2.5 text-gray-500">{row.priority || "—"}</td>
+                    <td className="px-4 py-2.5 text-gray-500">{row.due_date || "—"}</td>
+                    <td className="px-4 py-2.5 text-gray-500 max-w-[120px] truncate">{row.assignees || "—"}</td>
+                    <td className="px-4 py-2.5">{row._valid ? <span className="bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-medium">ok</span> : <span className="bg-red-100 text-red-700 px-1.5 py-0.5 rounded font-medium" title={row._errors.join(", ")}>errore</span>}</td>
                   </tr>
                 ))}
               </tbody>
@@ -207,19 +209,11 @@ export default function CsvImportPanel({ projectId, projectName }: Props) {
           </div>
 
           <div className="px-5 py-4 border-t border-gray-100 flex items-center gap-3">
-            <button
-              onClick={handleImport}
-              disabled={importing || valid === 0}
-              className="text-sm bg-accent text-white px-4 py-2 rounded-lg hover:opacity-90 disabled:opacity-50 font-medium"
-            >
+            <button onClick={handleImport} disabled={importing || valid === 0} className="text-sm bg-accent text-white px-4 py-2 rounded-lg hover:opacity-90 disabled:opacity-50 font-medium">
               {importing ? "Importing..." : `Import ${valid} tasks`}
             </button>
-            <button onClick={() => setRows([])} className="text-sm border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50">
-              Cancel
-            </button>
-            {invalid > 0 && (
-              <p className="text-xs text-gray-400 ml-auto">{invalid} rows with errors will be skipped</p>
-            )}
+            <button onClick={() => setRows([])} className="text-sm border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50">Cancel</button>
+            {invalid > 0 && <p className="text-xs text-gray-400 ml-auto">{invalid} rows with errors will be skipped</p>}
           </div>
         </div>
       )}

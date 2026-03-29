@@ -65,30 +65,30 @@ export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
 
 // ─── CSV parsing helpers ──────────────────────────────────────────────────────
 
+export function parseCsvStatus(raw: string | undefined): TaskStatus | null {
+  if (!raw) return null;
+  const normalized = raw.toLowerCase().trim().replace(/[-\s]+/g, "_");
+  if (normalized === "todo") return "todo";
+  if (normalized === "in_progress") return "in_progress";
+  if (normalized === "done") return "done";
+  return null;
+}
+
+export function parseCsvPriority(raw: string | undefined): TaskPriority | null {
+  if (!raw) return null;
+  const normalized = raw.toLowerCase().trim();
+  if (normalized === "low") return "low";
+  if (normalized === "medium") return "medium";
+  if (normalized === "high") return "high";
+  return null;
+}
+
 export function normalizeCsvStatus(raw: string | undefined): TaskStatus {
-  const map: Record<string, TaskStatus> = {
-    da_fare: "todo",
-    todo: "todo",
-    "da fare": "todo",
-    in_corso: "in_progress",
-    in_progress: "in_progress",
-    "in corso": "in_progress",
-    fatto: "done",
-    done: "done",
-  };
-  return map[raw?.toLowerCase().trim() ?? ""] ?? "todo";
+  return parseCsvStatus(raw) ?? "todo";
 }
 
 export function normalizeCsvPriority(raw: string | undefined): TaskPriority {
-  const map: Record<string, TaskPriority> = {
-    bassa: "low",
-    low: "low",
-    media: "medium",
-    medium: "medium",
-    alta: "high",
-    high: "high",
-  };
-  return map[raw?.toLowerCase().trim() ?? ""] ?? "medium";
+  return parseCsvPriority(raw) ?? "medium";
 }
 
 // ─── Misc ─────────────────────────────────────────────────────────────────────
