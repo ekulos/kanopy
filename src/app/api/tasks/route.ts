@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
+type TaskStatus = "todo" | "in_progress" | "done";
+
 const createTaskSchema = z.object({
   title: z.string().min(1).max(255),
   description: z.string().nullable().optional(),
@@ -20,7 +22,11 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url);
   const projectId = searchParams.get("projectId");
-  const status = searchParams.get("status") as string | null;
+  const statusParam = searchParams.get("status");
+  let status: TaskStatus | undefined = undefined;
+  if (statusParam === "todo" || statusParam === "in_progress" || statusParam === "done") {
+    status = statusParam as TaskStatus;
+  }
   const assigneeId = searchParams.get("assigneeId");
   const parentId = searchParams.get("parentId");
   const onlyRoot = searchParams.get("onlyRoot") === "true";
@@ -29,7 +35,7 @@ export async function GET(req: NextRequest) {
     where: {
       project: { ownerId: session.user.id },
       ...(projectId ? { projectId } : {}),
-      ...(status ? { status } : {}),
+      ...(status ? { status: status as any } : {}),
       ...(assigneeId ? { assignees: { some: { userId: assigneeId } } } : {}),
       ...(parentId !== null ? { parentId } : {}),
       ...(onlyRoot ? { parentId: null } : {}),
