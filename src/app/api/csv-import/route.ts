@@ -10,12 +10,12 @@ const importSchema = z.object({
   rows: z.array(
     z.object({
       title: z.string(),
-      description: z.string().optional(),
-      status: z.string().optional(),
-      priority: z.string().optional(),
-      due_date: z.string().optional(),
-      assignees: z.string().optional(),
-      main_task: z.string().optional(),
+      description: z.string().nullable().optional(),
+      status: z.string().nullable().optional(),
+      priority: z.string().nullable().optional(),
+      due_date: z.string().nullable().optional(),
+      assignees: z.string().nullable().optional(),
+      main_task: z.string().nullable().optional(),
     })
   ),
 });
