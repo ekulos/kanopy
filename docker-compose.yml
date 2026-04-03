@@ -3,19 +3,19 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: kanopy
-      POSTGRES_USER: kanopy
+      POSTGRES_DB: kyoma
+      POSTGRES_USER: kyoma
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kanopy_secret}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U kanopy"]
+      test: ["CMD-SHELL", "pg_isready -U kyoma"]
       interval: 10s
       timeout: 5s
       retries: 5
 
   app:
-    image: ghcr.io/ekulos/kanopy:latest
+    image: ghcr.io/ekulos/kyoma:latest
     restart: unless-stopped
     depends_on:
       db:
@@ -24,7 +24,7 @@ services:
       - "${PORT:-3000}:3000"
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgresql://kanopy:${POSTGRES_PASSWORD:-kanopy_secret}@db:5432/kanopy
+      DATABASE_URL: postgresql://kyoma:${POSTGRES_PASSWORD:-kanopy_secret}@db:5432/kyoma
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:${PORT:-3000}}
       NEXTAUTH_SECRET: ${AUTH_SECRET:-change_me}
       AUTH_SECRET: ${AUTH_SECRET:-change_me}

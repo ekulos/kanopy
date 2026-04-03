@@ -18,7 +18,7 @@ Kanopy is a Kanban-style task and project management system built with Next.js.
 ```bash
 # 1. Clone the repo and install dependencies
 git clone <repo>
-cd kanopy
+cd kyoma
 npm install
 
 # 2. Copy and fill environment variables

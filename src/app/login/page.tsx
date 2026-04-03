@@ -14,7 +14,7 @@ export default async function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="bg-white border border-gray-200 rounded-2xl p-10 w-full max-w-sm shadow-sm">
         <div className="flex items-center justify-center mb-8">
-          <Image src="/kanopy.svg" alt="Kanopy" width={200} height={300} />
+          <Image src="/kyoma.svg" alt="Kanopy" width={200} height={300} />
         </div>
 
         <h1 className="text-xl font-semibold mb-1">{t("welcome")}</h1>

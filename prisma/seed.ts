@@ -5,32 +5,32 @@ const prisma = new PrismaClient();
 async function main() {
   // Demo users
   const marco = await prisma.user.upsert({
-    where: { email: "marco@kanopy.dev" },
+    where: { email: "marco@kyoma.dev" },
     update: {},
     create: {
       name: "Marco Russo",
-      email: "marco@kanopy.dev",
+      email: "marco@kyoma.dev",
       role: "admin",
       image: null,
     },
   });
 
   const federica = await prisma.user.upsert({
-    where: { email: "federica@kanopy.dev" },
+    where: { email: "federica@kyoma.dev" },
     update: {},
     create: {
       name: "Federica Poli",
-      email: "federica@kanopy.dev",
+      email: "federica@kyoma.dev",
       role: "member",
     },
   });
 
   const sara = await prisma.user.upsert({
-    where: { email: "sara@kanopy.dev" },
+    where: { email: "sara@kyoma.dev" },
     update: {},
     create: {
       name: "Sara Ferrari",
-      email: "sara@kanopy.dev",
+      email: "sara@kyoma.dev",
       role: "member",
     },
   });
