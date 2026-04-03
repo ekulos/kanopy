@@ -9,7 +9,7 @@ const inter = Inter({ variable: "--font-geist-sans", subsets: ["latin"] });
 const jetbrainsMono = JetBrains_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Kanopy",
+  title: "Kyoma",
   description: "Kanban-style task and project management",
   icons: {
     icon: [

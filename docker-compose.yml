@@ -5,7 +5,7 @@ services:
     environment:
       POSTGRES_DB: kyoma
       POSTGRES_USER: kyoma
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kanopy_secret}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-Kyoma_secret}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -24,7 +24,7 @@ services:
       - "${PORT:-3000}:3000"
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgresql://kyoma:${POSTGRES_PASSWORD:-kanopy_secret}@db:5432/kyoma
+      DATABASE_URL: postgresql://kyoma:${POSTGRES_PASSWORD:-Kyoma_secret}@db:5432/kyoma
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:${PORT:-3000}}
       NEXTAUTH_SECRET: ${AUTH_SECRET:-change_me}
       AUTH_SECRET: ${AUTH_SECRET:-change_me}

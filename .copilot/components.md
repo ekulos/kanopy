@@ -1,6 +1,6 @@
 # Copilot — React Components
 
-Guidelines for creating and modifying Kanopy UI components.
+Guidelines for creating and modifying Kyoma UI components.
 
 ---
 

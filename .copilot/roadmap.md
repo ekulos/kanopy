@@ -1,6 +1,6 @@
 # Copilot — Roadmap & Future Extensions
 
-This file guides Copilot when implementing planned features for Kanopy. Each section describes what to add and where to change code.
+This file guides Copilot when implementing planned features for Kyoma. Each section describes what to add and where to change code.
 
 ---
 

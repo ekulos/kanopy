@@ -1,6 +1,6 @@
 # Copilot — Database & Prisma
 
-Guidance for working with the database and Prisma ORM in Kanopy.
+Guidance for working with the database and Prisma ORM in Kyoma.
 
 ---
 
@@ -173,7 +173,7 @@ const task = await prisma.task.findFirst({
 
 ## Migrations
 
-Kanopy usa **due schema Prisma** separati:
+Kyoma usa **due schema Prisma** separati:
 
 | File | Provider | Usato da |
 |---|---|---|

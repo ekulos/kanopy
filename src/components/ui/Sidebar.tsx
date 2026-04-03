@@ -39,7 +39,7 @@ export default function Sidebar({ user }: Props) {
           K
         </div>
         <span className="text-sm font-medium text-white">
-          Kan<span className="text-accent-light">opy</span>
+          Ky<span className="text-accent-light">oma</span>
         </span>
       </div>
 

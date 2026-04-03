@@ -1,6 +1,6 @@
 # Copilot — API Routes
 
-This file guides Copilot when creating or modifying Next.js API routes for the Kanopy project.
+This file guides Copilot when creating or modifying Next.js API routes for the Kyoma project.
 
 ---
 

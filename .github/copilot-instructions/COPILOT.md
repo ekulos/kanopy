@@ -1,6 +1,6 @@
-# Kanopy — Istruzioni per GitHub Copilot
+# Kyoma — Istruzioni per GitHub Copilot
 
-Questo file istruisce Copilot su architettura, convenzioni e regole del progetto **Kanopy**.
+Questo file istruisce Copilot su architettura, convenzioni e regole del progetto **Kyoma**.
 Leggilo sempre prima di generare codice nuovo o modificare quello esistente.
 
 ---

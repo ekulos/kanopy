@@ -1,6 +1,6 @@
-# Kanopy
+# Kyoma
 
-Kanopy is a Kanban-style task and project management system built with Next.js.
+Kyoma is a Kanban-style task and project management system built with Next.js.
 
 ## Features
 
